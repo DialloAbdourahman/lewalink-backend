@@ -43,17 +43,22 @@ export const validateSignin: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
-// export const validateUpdatePassword: ValidatorMiddleware[] = [
-//   body("oldPassword").exists().withMessage("Old password must be valid"),
-//   body("newPassword")
-//     .trim()
-//     .isLength({ min: 4, max: 20 })
-//     .withMessage("Password must be between 4 and 20 characters"),
-//   body("confirmNewPassword")
-//     .exists()
-//     .withMessage("Confirm new password must be provided"),
-//   validateRequest,
-// ];
+export const validateUpdatePassword: ValidatorMiddleware[] = [
+  body("oldPassword").exists().withMessage("Old password must be valid"),
+  body("newPassword")
+    .trim()
+    .isLength({ min: 5, max: 20 })
+    .withMessage("Password must be between 5 and 20 characters"),
+  body("confirmNewPassword")
+    .exists()
+    .withMessage("Confirm new password must be provided"),
+  validateRequest,
+];
+
+export const validateUpdateAccount: ValidatorMiddleware[] = [
+  body("name").exists().withMessage("Name must be valid"),
+  validateRequest,
+];
 
 export const validateActivateAccount: ValidatorMiddleware[] = [
   body("code").exists().withMessage("Provide a code"),
@@ -61,17 +66,17 @@ export const validateActivateAccount: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
-// export const validateGeneratePasswordCode: ValidatorMiddleware[] = [
-//   body("email").isEmail().withMessage("Email must be valid"),
+export const validateGeneratePasswordCode: ValidatorMiddleware[] = [
+  body("email").isEmail().withMessage("Email must be valid"),
 
-//   validateRequest,
-// ];
+  validateRequest,
+];
 
-// export const validateResetPassword: ValidatorMiddleware[] = [
-//   body("code").exists().withMessage("Provide a code"),
-//   body("password")
-//     .trim()
-//     .isLength({ min: 4, max: 20 })
-//     .withMessage("Password must be between 4 and 20 characters"),
-//   validateRequest,
-// ];
+export const validateResetPassword: ValidatorMiddleware[] = [
+  body("code").exists().withMessage("Provide a code"),
+  body("password")
+    .trim()
+    .isLength({ min: 4, max: 20 })
+    .withMessage("Password must be between 4 and 20 characters"),
+  validateRequest,
+];

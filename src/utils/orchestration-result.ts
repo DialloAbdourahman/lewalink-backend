@@ -46,6 +46,14 @@ export class OrchestrationResult {
     return;
   }
 
+  static unAuthorized(res: Response, code: CODES, message: string) {
+    res.status(401).json({
+      code,
+      message,
+    });
+    return;
+  }
+
   static notFound(res: Response, code: CODES, message: string) {
     res.status(404).json({
       code,
