@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  Admin
+  Client
+}
+
+enum SchoolType {
+  PublicStateUniversity
+}
+
+enum ProgramType {
+  HND
+  BTECH
+  LICENCE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+  type      UserType
+  token     String?
+  isActive  Boolean  @default(false)
+  isDeleted Boolean  @default(false)
+
+  schoolsCreated        School[]
+  programsCreated       Program[]
+  schoolProgramsCreated SchoolProgram[]
+  schoolRatings         SchoolRating[]
+  schoolProgramRating   SchoolProgramRating[]
+  coursesCreated        Course[]
+}
+
+model School {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  type        SchoolType
+  longitude   Float
+  latitude    Float
+  country     String
+  city        String
+  visits      Int        @default(0)
+  email       String?
+  phoneNumber String?
+  website     String?
+  pictures    String[]
+  isDeleted   Boolean    @default(false)
+
+  admin   User   @relation(fields: [adminId], references: [id])
+  adminId String
+
+  schoolPrograms SchoolProgram[]
+  schoolRatings  SchoolRating[]
+}
+
+model Program {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  type        ProgramType
+  isDeleted   Boolean     @default(false)
+
+  admin   User   @relation(fields: [adminId], references: [id])
+  adminId String
+
+  schoolPrograms SchoolProgram[]
+}
+
+model SchoolProgram {
+  id        String  @id @default(uuid())
+  price     Float
+  visits    Int     @default(0)
+  isDeleted Boolean @default(false)
+
+  admin   User   @relation(fields: [adminId], references: [id])
+  adminId String
+
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId String
+
+  program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId String
+
+  schoolProgramRatings SchoolProgramRating[]
+  schoolProgramCourses SchoolProgramCourse[]
+}
+
+model SchoolRating {
+  id        String  @id @default(uuid())
+  stars     Int
+  message   String
+  isDeleted Boolean @default(false)
+
+  client   User   @relation(fields: [clientId], references: [id])
+  clientId String
+
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  schoolId String
+}
+
+model SchoolProgramRating {
+  id        String  @id @default(uuid())
+  stars     Int
+  message   String
+  isDeleted Boolean @default(false)
+
+  client   User   @relation(fields: [clientId], references: [id])
+  clientId String
+
+  schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id], onDelete: Cascade)
+  schoolProgramId String
+}
+
+model Course {
+  id          String  @id @default(uuid())
+  code        String
+  title       String
+  description String
+  credits     Int
+  isDeleted   Boolean @default(false)
+
+  admin   User   @relation(fields: [adminId], references: [id])
+  adminId String
+
+  schoolProgramCourses SchoolProgramCourse[]
+}
+
+model SchoolProgramCourse {
+  id        String  @id @default(uuid())
+  isDeleted Boolean @default(false)
+
+  course          Course        @relation(fields: [courseId], references: [id])
+  courseId        String
+  schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id])
+  schoolProgramId String
+}
