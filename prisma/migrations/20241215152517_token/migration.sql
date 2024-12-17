@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ALTER COLUMN "tokens" SET NOT NULL,
-ALTER COLUMN "tokens" SET DATA TYPE TEXT;

@@ -1,0 +1,143 @@
+# /api/auth/v1:
+#   post:
+#     summary: Create an account
+#     tags:
+#       - Authentication module
+#     requestBody:
+#       required: true
+#       content:
+#         application/json:
+#           schema:
+#             type: object
+#             properties:
+#               name:
+#                 type: string
+#                 description: The user's fullname
+#                 example: "John Doe"
+#               email:
+#                 type: string
+#                 description: The user's email
+#                 example: "john@doe.com"
+#               password:
+#                 type: string
+#                 description: The password of the user.
+#                 example: "securepassword"
+#     responses:
+#       201:
+#         description: Account successfully created
+#         content:
+#           application/json:
+#             schema:
+#               type: object
+#               properties:
+#                 code:
+#                   type: string
+#                   example: "SUCCESS"
+#       "400 (1)":
+#         description: Error validating data
+#         content:
+#           application/json:
+#             schema:
+#               type: object
+#               properties:
+#                 code:
+#                   type: string
+#                   example: "VALIDATION_REQUEST_ERROR"
+#                 message:
+#                   type: string
+#                   example: "Name must be valid, Password must be between 5 and 20 characters"
+#       "400 (2)":
+#         description: Account has been deleted
+#         content:
+#           application/json:
+#             schema:
+#               type: object
+#               properties:
+#                 code:
+#                   type: string
+#                   example: "ACCOUNT_DELETED"
+#                 message:
+#                   type: string
+#                   example: "Account has been deleted, contact support team."
+#       "400 (3)":
+#         description: Email is already used
+#         content:
+#           application/json:
+#             schema:
+#               type: object
+#               properties:
+#                 code:
+#                   type: string
+#                   example: "EMAIL_IN_USE"
+#                 message:
+#                   type: string
+#                   example: "Email exist already in user"
+#       "400 (4)":
+#         description: Account exists already but has not yet been activated
+#         content:
+#           application/json:
+#             schema:
+#               type: object
+#               properties:
+#                 code:
+#                   type: string
+#                   example: "ACCOUNT_NOT_ACTIVATED"
+#                 message:
+#                   type: string
+#                   example: "Account exist already but has not been activated, check email."
+
+/api/auth/v1:
+  post:
+    summary: Create an account
+    tags:
+      - Authentication module
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The user's fullname
+                example: "John Doe"
+              email:
+                type: string
+                description: The user's email
+                example: "john@doe.com"
+              password:
+                type: string
+                description: The password of the user.
+                example: "securepassword"
+    responses:
+      201:
+        description: Account successfully created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+      400:
+        description: Various error scenarios, check yaml files.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                message:
+                  type: string
+        x-errors:
+          - code: "VALIDATION_REQUEST_ERROR"
+            message: "Name must be valid, Password must be between 5 and 20 characters"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "EMAIL_IN_USE"
+            message: "Email already in use"
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."

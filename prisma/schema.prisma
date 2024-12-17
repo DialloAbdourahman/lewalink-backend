@@ -32,12 +32,16 @@ model User {
   isActive  Boolean  @default(false)
   isDeleted Boolean  @default(false)
 
+  admin   User?   @relation("UserAdmin", fields: [adminId], references: [id])
+  adminId String?
+
   schoolsCreated        School[]
   programsCreated       Program[]
   schoolProgramsCreated SchoolProgram[]
   schoolRatings         SchoolRating[]
   schoolProgramRating   SchoolProgramRating[]
   coursesCreated        Course[]
+  usersCreated          User[]                @relation("UserAdmin")
 }
 
 model School {

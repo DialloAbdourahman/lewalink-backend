@@ -62,8 +62,6 @@ const createAccount = async (req: Request, res: Response) => {
     process.env.ACTIVATE_ACCOUNT_JWT_KEY as string
   );
 
-  console.log(code);
-
   const awsHelper = new AwsSesHelper();
   await awsHelper.sendActivateAccountEmail(
     user.email,
@@ -264,8 +262,6 @@ const forgotPassword = async (req: Request, res: Response) => {
     { id: user.id, email: user.email },
     process.env.FORGOT_PASSWORD_JWT_KEY as string
   );
-
-  console.log(code);
 
   const awsHelper = new AwsSesHelper();
   await awsHelper.sendResetPasswordEmail(user.email, user.name || "user", code);
@@ -627,6 +623,15 @@ const seeUsers = async (req: Request, res: Response) => {
 const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
+  if (!id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide an ID"
+    );
+    return;
+  }
+
   const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user) {
@@ -648,11 +653,38 @@ const deleteUser = async (req: Request, res: Response) => {
 const unDeleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
+  if (!id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide an ID"
+    );
+    return;
+  }
+
   const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user) {
     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
     return;
+  }
+
+  if (user.type === UserType.Admin) {
+    const adminsCount = await prisma.user.count({
+      where: {
+        type: UserType.Admin,
+        isDeleted: false,
+      },
+    });
+
+    if (adminsCount >= 3) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.MAX_ADMINS,
+        "Maximum number of admins in the system is 3"
+      );
+      return;
+    }
   }
 
   await prisma.user.update({
@@ -667,6 +699,15 @@ const unDeleteUser = async (req: Request, res: Response) => {
 
 const adminDeactivateAccount = async (req: Request, res: Response) => {
   const { id } = req.params;
+
+  if (!id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide an ID"
+    );
+    return;
+  }
 
   const user = await prisma.user.findUnique({ where: { id } });
 
@@ -688,6 +729,15 @@ const adminDeactivateAccount = async (req: Request, res: Response) => {
 
 const adminActivateAccount = async (req: Request, res: Response) => {
   const { id } = req.params;
+
+  if (!id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide an ID"
+    );
+    return;
+  }
 
   const user = await prisma.user.findUnique({ where: { id } });
 
@@ -766,6 +816,7 @@ const createAdmin = async (req: Request, res: Response) => {
       name,
       password,
       type: UserType.Admin,
+      adminId: req.currentUser?.id,
     },
   });
 
@@ -773,7 +824,6 @@ const createAdmin = async (req: Request, res: Response) => {
     { id: user.id, email: user.email },
     process.env.ACTIVATE_ACCOUNT_JWT_KEY as string
   );
-  console.log(code);
 
   const awsHelper = new AwsSesHelper();
   await awsHelper.sendActivateAccountEmail(
@@ -784,12 +834,6 @@ const createAdmin = async (req: Request, res: Response) => {
 
   OrchestrationResult.success(res, 201);
 };
-
-// when we reactivate a deleted admin, check the count
-// sanitize the id params well
-
-// Work on swagger
-// Work on tests
 
 export default {
   createAccount,
