@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
@@ -7,6 +8,7 @@ import { UserType } from "../enums/user-types";
 import { JWTCodes } from "../utils/jwt-codes";
 import { AwsSesHelper } from "../utils/aws-ses";
 import { generateTokens } from "../utils/generate-tokens";
+import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
 
 const createAccount = async (req: Request, res: Response) => {
   let { email, password, name } = req.body;
@@ -471,12 +473,320 @@ const logout = async (req: Request, res: Response) => {
   OrchestrationResult.success(res);
 };
 
-// Refresh token.
-// Add a middleware to check what type of user is allowed to access a route.
+const refresh = async (req: Request, res: Response) => {
+  const refresh = req.header("Authorization")?.replace("Bearer ", "");
 
-// Admin sees users by usertype, name.
-// Admin deletes users.
-// Admin create admin (max 3).
+  if (!refresh) {
+    OrchestrationResult.unAuthorized(
+      res,
+      CODES.NO_REFRESH_TOKEN,
+      "No refresh token"
+    );
+    return;
+  }
+
+  const foundUser = await prisma.user.findFirst({
+    where: {
+      token: refresh,
+    },
+  });
+
+  if (!foundUser) {
+    try {
+      const decoded: any = jwt.verify(
+        refresh,
+        process.env.REFRESH_TOKEN_JWT_KEY as string
+      );
+      console.log("Reuse detection mechanism");
+
+      const hackedUser = await prisma.user.findUnique({
+        where: {
+          id: decoded.id,
+        },
+      });
+
+      if (hackedUser) {
+        await prisma.user.update({
+          where: { id: decoded.id },
+          data: {
+            token: null,
+          },
+        });
+      }
+
+      OrchestrationResult.unAuthorized(
+        res,
+        CODES.REUSE_DETECTION,
+        "Reuse detection"
+      );
+      return;
+    } catch (error: any) {
+      OrchestrationResult.unAuthorized(
+        res,
+        CODES.CANNOT_DECODE_TOKEN,
+        "Cannot decode refresh token"
+      );
+      return;
+    }
+  }
+
+  try {
+    const decoded: any = jwt.verify(
+      refresh,
+      process.env.REFRESH_TOKEN_JWT_KEY as string
+    );
+
+    if (decoded?.id !== foundUser.id) {
+      OrchestrationResult.unAuthorized(
+        res,
+        CODES.UNAUTHORIZED,
+        "Not authorized"
+      );
+    }
+
+    const { accessToken, refreshToken } = generateTokens(foundUser);
+    await prisma.user.update({
+      where: {
+        id: foundUser.id,
+      },
+      data: {
+        token: refreshToken,
+      },
+    });
+
+    const data = {
+      id: foundUser.id,
+      name: foundUser.name,
+      email: foundUser.email,
+      type: foundUser.type,
+      accessToken,
+      refreshToken,
+    };
+    OrchestrationResult.item(res, data, 200);
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      OrchestrationResult.unAuthorized(
+        res,
+        CODES.REFRESH_TOKEN_EXPIRED,
+        "Refresh token has expired, login again."
+      );
+      return;
+    }
+
+    OrchestrationResult.unAuthorized(
+      res,
+      CODES.CANNOT_DECODE_TOKEN,
+      "Cannot decode refresh token"
+    );
+    return;
+  }
+};
+
+const seeUsers = async (req: Request, res: Response) => {
+  const { name, itemsPerPage, page, skip } =
+    getNameAndPageAndItemsPerPageFromRequestQuery(req);
+  const userType = req.query.userType
+    ? (String(req.query.userType) as UserType)
+    : UserType.Client;
+
+  const users = await prisma.user.findMany({
+    where: {
+      name: {
+        contains: name,
+        mode: "insensitive",
+      },
+      type: userType,
+    },
+    orderBy: {
+      name: "asc",
+    },
+    skip: skip,
+    take: itemsPerPage,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      isActive: true,
+      isDeleted: true,
+      type: true,
+    },
+  });
+  const count = await prisma.user.count({
+    where: {
+      name: {
+        contains: name,
+        mode: "insensitive",
+      },
+      type: userType,
+    },
+  });
+
+  OrchestrationResult.list(res, users, count, itemsPerPage, page);
+};
+
+const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  if (!user) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isDeleted: true,
+      token: null,
+    },
+  });
+
+  OrchestrationResult.success(res);
+};
+
+const unDeleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  if (!user) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isDeleted: false,
+    },
+  });
+
+  OrchestrationResult.success(res);
+};
+
+const adminDeactivateAccount = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  if (!user) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isActive: false,
+      token: null,
+    },
+  });
+
+  OrchestrationResult.success(res);
+};
+
+const adminActivateAccount = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  if (!user) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isActive: true,
+    },
+  });
+
+  OrchestrationResult.success(res);
+};
+
+const createAdmin = async (req: Request, res: Response) => {
+  let { email, password, name } = req.body;
+
+  const adminsCount = await prisma.user.count({
+    where: {
+      type: UserType.Admin,
+      isDeleted: false,
+    },
+  });
+
+  if (adminsCount >= 3) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.MAX_ADMINS,
+      "Maximum number of admins in the system is 3"
+    );
+    return;
+  }
+
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  if (existingUser) {
+    if (existingUser.isDeleted) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_DELETED,
+        "Account has been deleted, contact support team."
+      );
+      return;
+    }
+
+    if (existingUser.isActive) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.EMAIL_IN_USE,
+        "Email exist already in user"
+      );
+      return;
+    } else {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_NOT_ACTIVATED,
+        "Account exist already but has not been activated, check email."
+      );
+      return;
+    }
+  }
+
+  password = await PasswordManager.toHash(password);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      name,
+      password,
+      type: UserType.Admin,
+    },
+  });
+
+  const { code } = JWTCodes.generate(
+    { id: user.id, email: user.email },
+    process.env.ACTIVATE_ACCOUNT_JWT_KEY as string
+  );
+  console.log(code);
+
+  const awsHelper = new AwsSesHelper();
+  await awsHelper.sendActivateAccountEmail(
+    user.email,
+    user.name || "user",
+    code
+  );
+
+  OrchestrationResult.success(res, 201);
+};
+
+// when we reactivate a deleted admin, check the count
+// sanitize the id params well
 
 // Work on swagger
 // Work on tests
@@ -491,4 +801,11 @@ export default {
   updatePassword,
   updateAccount,
   logout,
+  refresh,
+  seeUsers,
+  deleteUser,
+  unDeleteUser,
+  adminActivateAccount,
+  adminDeactivateAccount,
+  createAdmin,
 };

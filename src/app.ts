@@ -1,7 +1,9 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import "express-async-errors";
 import { errorHandler } from "./middleware/error-handler";
 import { authRouter } from "./routers/auth-router";
+import { CODES } from "./enums/codes";
+import { OrchestrationResult } from "./utils/orchestration-result";
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
@@ -24,6 +26,14 @@ const specs = swaggerJsdoc({
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use("/auth/v1", authRouter);
+
+app.use("*", (req: Request, res: Response) => {
+  OrchestrationResult.notFound(
+    res,
+    CODES.ROUTE_DOES_NOT_EXIST,
+    "Route does not exist"
+  );
+});
 
 app.use(errorHandler);
 

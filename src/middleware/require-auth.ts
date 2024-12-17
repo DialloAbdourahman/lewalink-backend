@@ -3,20 +3,6 @@ import jwt from "jsonwebtoken";
 import { CODES } from "../enums/codes";
 import { OrchestrationResult } from "../utils/orchestration-result";
 
-interface UserPayload {
-  id: string;
-  email: string;
-  type: string;
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      currentUser?: UserPayload;
-    }
-  }
-}
-
 export const requireAuth = (
   req: Request,
   res: Response,

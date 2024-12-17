@@ -2,6 +2,20 @@ import { app } from "./app";
 import { prisma } from "./prisma";
 require("dotenv").config();
 
+interface UserPayload {
+  id: string;
+  email: string;
+  type: string;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      currentUser?: UserPayload;
+    }
+  }
+}
+
 const PORT = 3000;
 
 const start = async () => {
