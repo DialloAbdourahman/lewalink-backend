@@ -1,5 +1,5 @@
 import { Router } from "express";
-import authController from "../controllers/authController";
+import authController from "../controllers/auth-controller";
 import {
   validateActivateAccount,
   validateGeneratePasswordCode,
@@ -16,7 +16,7 @@ import { UserType } from "../enums/user-types";
 const router = Router();
 
 router
-  .post("/", validateSignup, authController.createAccount)
+  .post("/create", validateSignup, authController.createAccount)
   .post("/activate", validateActivateAccount, authController.activateAccount)
   .post("/signin", validateSignin, authController.signin)
   .post(
@@ -27,7 +27,7 @@ router
   .post("/token", authController.refresh)
   .post("/logout", requireAuth, authController.logout)
   .post(
-    "/undelete/:id",
+    "/restore-deleted-user/:id",
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.unDeleteUser
@@ -48,9 +48,15 @@ router
     "/create-admin",
     requireAuth,
     verifyRoles([UserType.Admin]),
+    validateSignup,
     authController.createAdmin
   )
-  .patch("/", requireAuth, validateUpdateAccount, authController.updateAccount)
+  .patch(
+    "/update",
+    requireAuth,
+    validateUpdateAccount,
+    authController.updateAccount
+  )
   .patch("/reset-password", validateResetPassword, authController.resetPassword)
   .patch(
     "/update-password",
@@ -58,7 +64,7 @@ router
     validateUpdatePassword,
     authController.updatePassword
   )
-  .get("/", requireAuth, authController.getProfile)
+  .get("/profile", requireAuth, authController.getProfile)
   .get(
     "/users",
     requireAuth,
@@ -66,7 +72,7 @@ router
     authController.seeUsers
   )
   .delete(
-    "/:id",
+    "/delete/:id",
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.deleteUser

@@ -9,6 +9,7 @@ import { JWTCodes } from "../utils/jwt-codes";
 import { AwsSesHelper } from "../utils/aws-ses";
 import { generateTokens } from "../utils/generate-tokens";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
+import { UserReturned } from "../enums/entity-returned";
 
 const createAccount = async (req: Request, res: Response) => {
   let { email, password, name } = req.body;
@@ -175,9 +176,9 @@ const signin = async (req: Request, res: Response) => {
     },
   });
 
-  const data = {
+  const data: UserReturned = {
     id: user.id,
-    name: user.name,
+    name: user.name || "",
     email: user.email,
     type: user.type,
     accessToken,
@@ -223,7 +224,14 @@ const getProfile = async (req: Request, res: Response) => {
     return;
   }
 
-  OrchestrationResult.item(res, user, 200);
+  const data: UserReturned = {
+    id: user.id,
+    name: user.name || "",
+    email: user.email,
+    type: user.type,
+  };
+
+  OrchestrationResult.item(res, data, 200);
 };
 
 const forgotPassword = async (req: Request, res: Response) => {
@@ -351,7 +359,7 @@ const updatePassword = async (req: Request, res: Response) => {
     OrchestrationResult.badRequest(
       res,
       CODES.PASSWORD_DOES_NOT_MATCH,
-      "Password does not match"
+      "The password provided should match the old password"
     );
     return;
   }
@@ -360,7 +368,7 @@ const updatePassword = async (req: Request, res: Response) => {
     OrchestrationResult.badRequest(
       res,
       CODES.PASSWORDS_MUST_BE_THE_SAME,
-      "Passwords must be the same"
+      "NewPassword and ConfirmNewPassword should be the same"
     );
     return;
   }
@@ -421,12 +429,17 @@ const updateAccount = async (req: Request, res: Response) => {
       name: true,
       email: true,
       type: true,
-      isActive: true,
-      isDeleted: true,
     },
   });
 
-  OrchestrationResult.item(res, updateduser);
+  const data: UserReturned = {
+    id: updateduser.id,
+    name: updateduser.name || "",
+    email: updateduser.email,
+    type: updateduser.type,
+  };
+
+  OrchestrationResult.item(res, data);
 };
 
 const logout = async (req: Request, res: Response) => {
@@ -550,9 +563,9 @@ const refresh = async (req: Request, res: Response) => {
       },
     });
 
-    const data = {
+    const data: UserReturned = {
       id: foundUser.id,
-      name: foundUser.name,
+      name: foundUser.name || "",
       email: foundUser.email,
       type: foundUser.type,
       accessToken,
@@ -602,8 +615,6 @@ const seeUsers = async (req: Request, res: Response) => {
       id: true,
       name: true,
       email: true,
-      isActive: true,
-      isDeleted: true,
       type: true,
     },
   });
