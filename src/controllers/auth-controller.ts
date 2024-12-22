@@ -553,6 +553,24 @@ const refresh = async (req: Request, res: Response) => {
       );
     }
 
+    if (!foundUser?.isActive) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_NOT_ACTIVATED,
+        "Activate your account"
+      );
+      return;
+    }
+
+    if (foundUser?.isDeleted) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_DELETED,
+        "Your account has been deleted, contact support."
+      );
+      return;
+    }
+
     const { accessToken, refreshToken } = generateTokens(foundUser);
     await prisma.user.update({
       where: {

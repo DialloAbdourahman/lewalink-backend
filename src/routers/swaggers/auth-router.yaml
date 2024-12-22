@@ -343,7 +343,22 @@
                     refreshToken:
                       type: string
                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkwN2I0ZTk0LWZjMjAtNGZmMi05YzNlLWVlNGFmN2FjZTAwYyIsImlhdCI6MTczNDQ3MTA3MCwiZXhwIjoxNzM1MDc1ODcwfQ.9W54La-NAMTAiKA7aC3FTaX5AmVB6p5DcBGQaCXcrDI"
-
+      400:
+        description: Various error scenarios, check yaml files.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                message:
+                  type: string
+        x-errors:
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
       401:
         description: Various error scenarios, check yaml files.
         content:

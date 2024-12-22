@@ -90,7 +90,6 @@ const start = async () => {
 
 start();
 
-// Work on swagger.
 // Work on tests.
 // Work on social media auth for the clients only.
 // Think on adding another role like a publisher or a manager to manage schools and courses. Not users.

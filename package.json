@@ -4,8 +4,16 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "test": "jest --watchAll --no-cache --runInBand",
     "dev": "ts-node-dev src/index.ts",
     "start": "node dist/index.js"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "./src/test/setup.ts"
+    ]
   },
   "keywords": [],
   "author": "",
