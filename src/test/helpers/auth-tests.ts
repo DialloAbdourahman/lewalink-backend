@@ -24,7 +24,7 @@ export const createUser = async (
     },
   });
 
-  return { createdUser, planTextPassword };
+  return { createdUser, planTextPassword, password };
 };
 
 export const loginUser = async (
