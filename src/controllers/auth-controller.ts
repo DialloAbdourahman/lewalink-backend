@@ -706,7 +706,7 @@ const unDeleteUser = async (req: Request, res: Response) => {
       },
     });
 
-    if (adminsCount >= 3) {
+    if (adminsCount >= Number(process.env.TOTOL_ADMINS_IN_SYSTEM)) {
       OrchestrationResult.badRequest(
         res,
         CODES.MAX_ADMINS,
@@ -795,7 +795,7 @@ const createAdmin = async (req: Request, res: Response) => {
     },
   });
 
-  if (adminsCount >= 3) {
+  if (adminsCount >= Number(process.env.TOTOL_ADMINS_IN_SYSTEM)) {
     OrchestrationResult.badRequest(
       res,
       CODES.MAX_ADMINS,

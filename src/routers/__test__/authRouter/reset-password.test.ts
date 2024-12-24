@@ -1,9 +1,9 @@
-import { app } from "../../app";
+import { app } from "../../../app";
 import request from "supertest";
-import { CODES } from "../../enums/codes";
-import { prisma } from "../../prisma";
-import { JWTCodes } from "../../utils/jwt-codes";
-import { createUser } from "../../test/helpers/auth-tests";
+import { CODES } from "../../../enums/codes";
+import { prisma } from "../../../prisma";
+import { JWTCodes } from "../../../utils/jwt-codes";
+import { createUser } from "../../../test/helpers/auth-tests";
 
 it("Should not reset password if data is not provided.", async () => {
   const response = await request(app)

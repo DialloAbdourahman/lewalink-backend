@@ -1,8 +1,8 @@
-import { app } from "../../app";
+import { app } from "../../../app";
 import request from "supertest";
-import { CODES } from "../../enums/codes";
-import { prisma } from "../../prisma";
-import { UserType } from "../../enums/user-types";
+import { CODES } from "../../../enums/codes";
+import { prisma } from "../../../prisma";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not create account with incomplete information", async () => {
   const email = "test@test.com";

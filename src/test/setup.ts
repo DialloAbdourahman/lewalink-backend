@@ -37,6 +37,7 @@ beforeAll(async () => {
 
   process.env.ACTIVATE_ACCOUNT_JWT_KEY = "UDUFHSUDF";
   process.env.FORGOT_PASSWORD_JWT_KEY = "YYSKJGYEYSUEY";
+  process.env.TOTOL_ADMINS_IN_SYSTEM = "3";
 
   try {
     await prisma.$connect();

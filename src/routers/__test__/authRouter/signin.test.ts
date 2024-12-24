@@ -1,8 +1,8 @@
-import { app } from "../../app";
+import { app } from "../../../app";
 import request from "supertest";
-import { CODES } from "../../enums/codes";
-import { createUser } from "../../test/helpers/auth-tests";
-import { prisma } from "../../prisma";
+import { CODES } from "../../../enums/codes";
+import { createUser } from "../../../test/helpers/auth-tests";
+import { prisma } from "../../../prisma";
 
 it("Should not login user if all information is not entered", async () => {
   const email = "test@test.com";

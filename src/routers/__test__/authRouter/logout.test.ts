@@ -1,11 +1,11 @@
-import { app } from "../../app";
+import { app } from "../../../app";
 import request from "supertest";
-import { CODES } from "../../enums/codes";
+import { CODES } from "../../../enums/codes";
 import {
   loginUser,
   userDoesNotExistLogin,
-} from "../../test/helpers/auth-tests";
-import { prisma } from "../../prisma";
+} from "../../../test/helpers/auth-tests";
+import { prisma } from "../../../prisma";
 
 it("Should not logout user whose account has not been activated", async () => {
   const { accessToken, createdUser } = await loginUser(false, false);

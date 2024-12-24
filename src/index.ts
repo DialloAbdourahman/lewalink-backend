@@ -69,6 +69,11 @@ const start = async () => {
     process.exit();
   }
 
+  if (!process.env.TOTOL_ADMINS_IN_SYSTEM) {
+    console.log("TOTOL_ADMINS_IN_SYSTEM must be defined.");
+    process.exit();
+  }
+
   try {
     await prisma.$connect();
     console.log("Connected to PostgreSQL successfully");

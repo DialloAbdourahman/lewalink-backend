@@ -16,22 +16,22 @@ import { UserType } from "../enums/user-types";
 const router = Router();
 
 router
-  .post("/create", validateSignup, authController.createAccount)
-  .post("/activate", validateActivateAccount, authController.activateAccount)
-  .post("/signin", validateSignin, authController.signin)
+  .post("/create", validateSignup, authController.createAccount) // TESTED
+  .post("/activate", validateActivateAccount, authController.activateAccount) // TESTED
+  .post("/signin", validateSignin, authController.signin) // TESTED
   .post(
     "/forgot-password",
     validateGeneratePasswordCode,
     authController.forgotPassword
-  )
-  .post("/token", authController.refresh)
-  .post("/logout", requireAuth, authController.logout)
+  ) // TESTED
+  .post("/token", authController.refresh) // TESTED
+  .post("/logout", requireAuth, authController.logout) // TESTED
   .post(
     "/restore-deleted-user/:id",
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.unDeleteUser
-  )
+  ) // TESTED
   .post(
     "/admin-deactivates-account/:id",
     requireAuth,
@@ -43,39 +43,39 @@ router
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.adminActivateAccount
-  )
+  ) // TESTED
   .post(
     "/create-admin",
     requireAuth,
     verifyRoles([UserType.Admin]),
     validateSignup,
     authController.createAdmin
-  )
+  ) // TESTED
   .patch(
     "/update",
     requireAuth,
     validateUpdateAccount,
     authController.updateAccount
-  )
-  .patch("/reset-password", validateResetPassword, authController.resetPassword)
+  ) // TESTED
+  .patch("/reset-password", validateResetPassword, authController.resetPassword) // TESTED
   .patch(
     "/update-password",
     requireAuth,
     validateUpdatePassword,
     authController.updatePassword
-  )
-  .get("/profile", requireAuth, authController.getProfile)
+  ) // TESTED
+  .get("/profile", requireAuth, authController.getProfile) // TESTED
   .get(
     "/users",
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.seeUsers
-  )
+  ) // TESTED
   .delete(
     "/delete/:id",
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.deleteUser
-  );
+  ); // TESTED
 
 export { router as authRouter };
