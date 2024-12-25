@@ -55,12 +55,29 @@ export const validateUpdatePassword: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
+export const validateAddPassword: ValidatorMiddleware[] = [
+  body("newPassword")
+    .trim()
+    .isLength({ min: 5, max: 20 })
+    .withMessage("Password must be between 5 and 20 characters"),
+  body("confirmNewPassword")
+    .exists()
+    .withMessage("Confirm new password must be provided"),
+  validateRequest,
+];
+
 export const validateUpdateAccount: ValidatorMiddleware[] = [
   body("name").exists().withMessage("Name must be valid"),
   validateRequest,
 ];
 
 export const validateActivateAccount: ValidatorMiddleware[] = [
+  body("code").exists().withMessage("Provide a code"),
+
+  validateRequest,
+];
+
+export const validateOauth: ValidatorMiddleware[] = [
   body("code").exists().withMessage("Provide a code"),
 
   validateRequest,

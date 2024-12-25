@@ -69,8 +69,23 @@ const start = async () => {
     process.exit();
   }
 
-  if (!process.env.TOTOL_ADMINS_IN_SYSTEM) {
-    console.log("TOTOL_ADMINS_IN_SYSTEM must be defined.");
+  if (!process.env.TOTAL_ADMINS_IN_SYSTEM) {
+    console.log("TOTAL_ADMINS_IN_SYSTEM must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    console.log("GOOGLE_CLIENT_ID must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.GOOGLE_CLIENT_SECRET) {
+    console.log("GOOGLE_CLIENT_SECRET must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.GOOGLE_REDIRECT_LINK) {
+    console.log("GOOGLE_REDIRECT_LINK must be defined.");
     process.exit();
   }
 

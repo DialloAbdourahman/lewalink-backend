@@ -86,7 +86,7 @@ it("Should not update password if the two new passwords don't match", async () =
   expect(response.body.code).toBe(CODES.PASSWORDS_MUST_BE_THE_SAME);
 });
 
-it("Should update the password of a user whose account has not been activated", async () => {
+it("Should not update the password of a user whose account has not been activated", async () => {
   const { accessToken, planTextPassword } = await loginUser(false, false);
 
   const response = await request(app)
@@ -141,6 +141,26 @@ it("Should not update password of an unauthenticated user", async () => {
     });
   expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.NO_ACCESS_TOKEN);
+});
+
+it("Should not allow a passwordless user to use this route", async () => {
+  const { accessToken, planTextPassword } = await loginUser(
+    false,
+    true,
+    false,
+    true
+  );
+
+  const response = await request(app)
+    .patch("/api/auth/v1/update-password")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({
+      oldPassword: planTextPassword,
+      newPassword: "asdfasdfd",
+      confirmNewPassword: "asdfasdfd",
+    });
+  expect(response.status).toEqual(400);
+  expect(response.body.code).toBe(CODES.NO_PASSWORD_TO_ACCOUNT);
 });
 
 it("Should update password if all information is provided", async () => {

@@ -26,6 +26,19 @@ jest.mock("../utils/aws-ses.ts", () => {
   };
 });
 
+jest.mock("../utils/get-user-from-google.ts", () => {
+  return {
+    getUserFromGoogle: jest.fn().mockImplementation(() => {
+      return Promise.resolve({
+        id: "asdfasdf",
+        email: "test@test.com",
+        name: "Tester",
+        picture: "asdfasdfasdfasdf",
+      });
+    }),
+  };
+});
+
 beforeAll(async () => {
   process.env.DATABASE_URL =
     "postgresql://postgres:postgres@localhost:5432/lewalink?schema=public";
@@ -37,7 +50,7 @@ beforeAll(async () => {
 
   process.env.ACTIVATE_ACCOUNT_JWT_KEY = "UDUFHSUDF";
   process.env.FORGOT_PASSWORD_JWT_KEY = "YYSKJGYEYSUEY";
-  process.env.TOTOL_ADMINS_IN_SYSTEM = "3";
+  process.env.TOTAL_ADMINS_IN_SYSTEM = "3";
 
   try {
     await prisma.$connect();

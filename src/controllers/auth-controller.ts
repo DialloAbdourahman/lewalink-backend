@@ -10,6 +10,7 @@ import { AwsSesHelper } from "../utils/aws-ses";
 import { generateTokens } from "../utils/generate-tokens";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
 import { UserReturned } from "../enums/entity-returned";
+import { getUserFromGoogle } from "../utils/get-user-from-google";
 
 const createAccount = async (req: Request, res: Response) => {
   let { email, password, name } = req.body;
@@ -151,7 +152,17 @@ const signin = async (req: Request, res: Response) => {
     return;
   }
 
+  if (!user.password) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.NO_PASSWORD_TO_ACCOUNT,
+      "Your account doesn't have a password. Use Google to login or click on forgot password to associate a password to your account."
+    );
+    return;
+  }
+
   const match = await PasswordManager.compare(user.password, password);
+
   if (!match) {
     OrchestrationResult.badRequest(
       res,
@@ -350,6 +361,15 @@ const updatePassword = async (req: Request, res: Response) => {
       res,
       CODES.ACCOUNT_DELETED,
       "Your account has been deleted, contact support."
+    );
+    return;
+  }
+
+  if (!user.password) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.NO_PASSWORD_TO_ACCOUNT,
+      "Your account doesn't have a password, use add-password route."
     );
     return;
   }
@@ -706,7 +726,7 @@ const unDeleteUser = async (req: Request, res: Response) => {
       },
     });
 
-    if (adminsCount >= Number(process.env.TOTOL_ADMINS_IN_SYSTEM)) {
+    if (adminsCount >= Number(process.env.TOTAL_ADMINS_IN_SYSTEM)) {
       OrchestrationResult.badRequest(
         res,
         CODES.MAX_ADMINS,
@@ -795,7 +815,7 @@ const createAdmin = async (req: Request, res: Response) => {
     },
   });
 
-  if (adminsCount >= Number(process.env.TOTOL_ADMINS_IN_SYSTEM)) {
+  if (adminsCount >= Number(process.env.TOTAL_ADMINS_IN_SYSTEM)) {
     OrchestrationResult.badRequest(
       res,
       CODES.MAX_ADMINS,
@@ -864,6 +884,203 @@ const createAdmin = async (req: Request, res: Response) => {
   OrchestrationResult.success(res, 201);
 };
 
+const oauthGoogle = async (req: Request, res: Response) => {
+  let { code } = req.body;
+  let googleUser;
+
+  try {
+    googleUser = await getUserFromGoogle(code);
+
+    if (!googleUser || !googleUser.email || !googleUser.name) {
+      OrchestrationResult.serverError(
+        res,
+        CODES.GOOGLE_AUTH_ERROR,
+        "Failed to authenticate with Google"
+      );
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+    OrchestrationResult.serverError(
+      res,
+      CODES.GOOGLE_AUTH_ERROR,
+      "Failed to authenticate with Google"
+    );
+    return;
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      email: googleUser.email,
+    },
+  });
+
+  let user;
+
+  if (existingUser) {
+    if (existingUser.type === "Admin") {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.CLIENT_ONLY,
+        "Admins are not allowed to use this route"
+      );
+      return;
+    }
+
+    if (!existingUser?.isActive) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_NOT_ACTIVATED,
+        "Activate your account"
+      );
+      return;
+    }
+
+    if (existingUser?.isDeleted) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_DELETED,
+        "Your account has been deleted, contact support."
+      );
+      return;
+    }
+
+    user = existingUser;
+  } else {
+    user = await prisma.user.create({
+      data: {
+        email: googleUser.email,
+        name: googleUser.name,
+        type: UserType.Client,
+        isActive: true,
+      },
+    });
+  }
+
+  const { accessToken, refreshToken } = generateTokens({
+    id: user.id,
+    email: user.email,
+    type: user.type,
+  });
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      token: refreshToken,
+    },
+  });
+
+  const data: UserReturned = {
+    id: user.id,
+    name: user.name || "",
+    email: user.email,
+    type: user.type,
+    accessToken,
+    refreshToken,
+  };
+
+  OrchestrationResult.item(res, data, 200);
+};
+
+const hasPassword = async (req: Request, res: Response) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.currentUser?.id },
+  });
+
+  if (!user) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
+    return;
+  }
+
+  if (!user?.isActive) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.ACCOUNT_NOT_ACTIVATED,
+      "Activate your account"
+    );
+    return;
+  }
+
+  if (user?.isDeleted) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.ACCOUNT_DELETED,
+      "Your account has been deleted, contact support."
+    );
+    return;
+  }
+
+  const data = {
+    hasPassword: !!user.password,
+  };
+
+  OrchestrationResult.item(res, data, 200);
+};
+
+const addPassword = async (req: Request, res: Response) => {
+  let { newPassword, confirmNewPassword } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.currentUser?.id },
+  });
+
+  if (!user) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
+    return;
+  }
+
+  if (!user?.isActive) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.ACCOUNT_NOT_ACTIVATED,
+      "Activate your account"
+    );
+    return;
+  }
+
+  if (user?.isDeleted) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.ACCOUNT_DELETED,
+      "Your account has been deleted, contact support."
+    );
+    return;
+  }
+
+  if (user.password) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.PASSWORD_EXIST_ALREADY,
+      "Password exists already."
+    );
+    return;
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.PASSWORDS_MUST_BE_THE_SAME,
+      "NewPassword and ConfirmNewPassword should be the same"
+    );
+    return;
+  }
+
+  const password = await PasswordManager.toHash(newPassword);
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      password,
+    },
+  });
+
+  OrchestrationResult.success(res);
+};
+
 export default {
   createAccount,
   activateAccount,
@@ -881,4 +1098,10 @@ export default {
   adminActivateAccount,
   adminDeactivateAccount,
   createAdmin,
+  oauthGoogle,
+  hasPassword,
+  addPassword,
 };
+
+// Swagger
+//  => add password

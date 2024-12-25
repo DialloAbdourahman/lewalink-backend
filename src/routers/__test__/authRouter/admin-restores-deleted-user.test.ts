@@ -51,7 +51,7 @@ it("Should not allow admin to retore a user that doesn't exist", async () => {
 
 it("Should not allow an admin to restore another admin if the admin count has reached its limit", async () => {
   // Normal non-deleted admins
-  for (let i = 0; i < Number(process.env.TOTOL_ADMINS_IN_SYSTEM); i++) {
+  for (let i = 0; i < Number(process.env.TOTAL_ADMINS_IN_SYSTEM); i++) {
     await loginUser(true);
   }
 

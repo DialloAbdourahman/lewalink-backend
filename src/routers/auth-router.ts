@@ -2,7 +2,9 @@ import { Router } from "express";
 import authController from "../controllers/auth-controller";
 import {
   validateActivateAccount,
+  validateAddPassword,
   validateGeneratePasswordCode,
+  validateOauth,
   validateResetPassword,
   validateSignin,
   validateSignup,
@@ -51,6 +53,7 @@ router
     validateSignup,
     authController.createAdmin
   ) // TESTED
+  .post("/oauth-google", validateOauth, authController.oauthGoogle) // TESTED
   .patch(
     "/update",
     requireAuth,
@@ -64,7 +67,15 @@ router
     validateUpdatePassword,
     authController.updatePassword
   ) // TESTED
+  .patch(
+    "/add-password",
+    requireAuth,
+    verifyRoles([UserType.Client]),
+    validateAddPassword,
+    authController.addPassword
+  ) // TESTED
   .get("/profile", requireAuth, authController.getProfile) // TESTED
+  .get("/has-password", requireAuth, authController.hasPassword) // TESTED
   .get(
     "/users",
     requireAuth,

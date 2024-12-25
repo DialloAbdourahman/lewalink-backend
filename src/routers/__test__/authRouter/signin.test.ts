@@ -63,6 +63,16 @@ it("Should not login user with wrong password", async () => {
   expect(response.body.code).toBe(CODES.UNABLE_TO_LOGIN);
 });
 
+it("Should not allow a passwordless user to signin using this route", async () => {
+  const { createdUser } = await createUser(true, false, true);
+
+  const response = await request(app)
+    .post("/api/auth/v1/signin")
+    .send({ email: createdUser.email, password: "asdfasdfasdfd" });
+  expect(response.status).toEqual(400);
+  expect(response.body.code).toBe(CODES.NO_PASSWORD_TO_ACCOUNT);
+});
+
 it("Should login a user", async () => {
   const { createdUser, planTextPassword } = await createUser();
 

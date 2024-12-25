@@ -49,7 +49,7 @@ it("Should not allow an admin to create another admin if the number of admin lim
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
   // Normal non-deleted admins
-  for (let i = 0; i < Number(process.env.TOTOL_ADMINS_IN_SYSTEM); i++) {
+  for (let i = 0; i < Number(process.env.TOTAL_ADMINS_IN_SYSTEM); i++) {
     await loginUser(true);
   }
 

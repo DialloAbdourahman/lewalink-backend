@@ -69,4 +69,12 @@ export class OrchestrationResult {
     });
     return;
   }
+
+  static serverError(res: Response, code: CODES, message: string) {
+    res.status(500).json({
+      code,
+      message,
+    });
+    return;
+  }
 }

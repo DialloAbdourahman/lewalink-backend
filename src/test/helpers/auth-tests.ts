@@ -14,9 +14,13 @@ function generateRandomString(length = 10) {
 
 export const createUser = async (
   isActive: boolean = true,
-  isDeleted: boolean = false
+  isDeleted: boolean = false,
+  noPassword: boolean = false,
+  testEmail: string = ""
 ) => {
-  const email = `test${generateRandomString()}@test.com`;
+  const email = testEmail
+    ? testEmail
+    : `test${generateRandomString()}@test.com`;
   const password =
     "c3d683ec02254543e9cc93ad406d4bda02c809c37ddbacaf3c3db1867ef2602416b43e22b37cbd013c074363bd7400a561f574f6b5af60c23af53b81051e573e.2eff29ca6a5ee717";
   const name = "test";
@@ -26,7 +30,7 @@ export const createUser = async (
     data: {
       id: `sdfasdfsadf${generateRandomString()}asdfd`,
       email,
-      password,
+      password: noPassword ? null : password,
       name,
       type: "Client",
       isActive,
@@ -40,11 +44,15 @@ export const createUser = async (
 export const loginUser = async (
   isAdmin: boolean = false,
   isActive: boolean = true,
-  isDeleted: boolean = false
+  isDeleted: boolean = false,
+  noPassword: boolean = false,
+  testEmail: string = ""
 ) => {
   const { createdUser, planTextPassword, password } = await createUser(
     isActive,
-    isDeleted
+    isDeleted,
+    noPassword,
+    testEmail
   );
 
   let { accessToken, refreshToken } = generateTokens({
