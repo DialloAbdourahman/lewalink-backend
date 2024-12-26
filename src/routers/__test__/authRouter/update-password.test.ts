@@ -97,7 +97,7 @@ it("Should not update the password of a user whose account has not been activate
       newPassword: "asdfasdfd",
       confirmNewPassword: "asdfasdfd",
     });
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_NOT_ACTIVATED);
 });
 
@@ -112,7 +112,7 @@ it("Should not update the password of a user whose account has been deleted", as
       newPassword: "asdfasdfd",
       confirmNewPassword: "asdfasdfd",
     });
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_DELETED);
 });
 
@@ -127,7 +127,7 @@ it("Should not update the password of a user that doesn't exist", async () => {
       newPassword: "asdfasdfd",
       confirmNewPassword: "asdfasdfd",
     });
-  expect(response.status).toEqual(404);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.NOT_FOUND);
 });
 

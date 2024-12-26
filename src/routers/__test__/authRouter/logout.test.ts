@@ -14,7 +14,7 @@ it("Should not logout user whose account has not been activated", async () => {
     .post("/api/auth/v1/logout")
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_NOT_ACTIVATED);
 
   const user = await prisma.user.findFirst({
@@ -32,7 +32,7 @@ it("Should not logout user whose account has been deleted", async () => {
     .post("/api/auth/v1/logout")
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_DELETED);
 
   const user = await prisma.user.findFirst({
@@ -50,7 +50,7 @@ it("Should not get logout a user that doesn't exist", async () => {
     .post("/api/auth/v1/logout")
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
-  expect(response.status).toEqual(404);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.NOT_FOUND);
 });
 

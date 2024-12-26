@@ -1,10 +1,7 @@
 import { app } from "../../../app";
 import request from "supertest";
 import { CODES } from "../../../enums/codes";
-import {
-  loginUser,
-  userDoesNotExistLogin,
-} from "../../../test/helpers/auth-tests";
+import { loginUser } from "../../../test/helpers/auth-tests";
 
 it("Should not generate code if account has not been activated", async () => {
   const { createdUser } = await loginUser(false, false);

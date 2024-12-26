@@ -7,7 +7,7 @@ import {
 } from "../../../test/helpers/auth-tests";
 
 it("Should not update account information is missing", async () => {
-  const { accessToken } = await loginUser(false, false);
+  const { accessToken } = await loginUser(false, true);
 
   const response = await request(app)
     .patch("/api/auth/v1/update")
@@ -26,7 +26,7 @@ it("Should not update account of user whose account has not been activated", asy
     .send({
       name: "Testing",
     });
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_NOT_ACTIVATED);
 });
 
@@ -39,7 +39,7 @@ it("Should not update account of user whose account has been deleted", async () 
     .send({
       name: "Testing",
     });
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_DELETED);
 });
 
@@ -52,7 +52,7 @@ it("Should not update account of a user that doesn't exist", async () => {
     .send({
       name: "Testing",
     });
-  expect(response.status).toEqual(404);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.NOT_FOUND);
 });
 

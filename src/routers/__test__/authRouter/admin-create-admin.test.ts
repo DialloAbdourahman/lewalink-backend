@@ -24,7 +24,7 @@ it("Should not allow a user to create an admin if he is unauthenticated", async 
 });
 
 it("Should not allow a normal user to create an admin", async () => {
-  const { accessToken } = await loginUser(false, true, true);
+  const { accessToken } = await loginUser(false, true, false);
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
   const response = await request(app)

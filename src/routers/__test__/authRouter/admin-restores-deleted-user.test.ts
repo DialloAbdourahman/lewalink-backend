@@ -21,7 +21,7 @@ it("Should not allow a user to restore another user if he is unauthenticated", a
 });
 
 it("Should not allow a normal user to retore another user", async () => {
-  const { createdUser, accessToken } = await loginUser(false, true, true);
+  const { createdUser, accessToken } = await loginUser(false, true, false);
 
   const response = await request(app)
     .post(`/api/auth/v1/restore-deleted-user/${createdUser.id}`)
@@ -34,7 +34,7 @@ it("Should not allow a normal user to retore another user", async () => {
   const restoredUser = await prisma.user.findUnique({
     where: { id: createdUser.id },
   });
-  expect(restoredUser?.isDeleted).toBe(true);
+  expect(restoredUser?.isDeleted).toBe(false);
 });
 
 it("Should not allow admin to retore a user that doesn't exist", async () => {

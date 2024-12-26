@@ -108,10 +108,6 @@
         x-errors:
           - code: "VALIDATION_REQUEST_ERROR"
             message: "Name must be valid, Password must be between 5 and 20 characters"
-          - code: "EMAIL_IN_USE"
-            message: "Email already in use"
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
       404:
         description: Various error scenarios, check yaml files.
         content:
@@ -293,12 +289,10 @@
             message: "Account has been deleted, contact support team."
           - code: "ACCOUNT_NOT_ACTIVATED"
             message: "Account exists but has not been activated, check your email."
-          - code: "GOOGLE_AUTH_ERROR"
-            message: "Failed to authenticate with Google"
           - code: "CLIENT_ONLY"
             message: "Admins are not allowed to use this route"
       500:
-        description: Unexpected server error
+        description: Various error scenarios, check yaml files.
         content:
           application/json:
             schema:
@@ -306,10 +300,13 @@
               properties:
                 code:
                   type: string
-                  example: "UNEXPECTED_ERROR"
                 message:
                   type: string
-                  example: "Something went wrong"
+        x-errors:
+          - code: "GOOGLE_AUTH_ERROR"
+            message: "Failed to authenticate with Google"
+          - code: "UNEXPECTED_ERROR"
+            message: "Something went wrong"
 
 /api/auth/v1/forgot-password:
   post:
@@ -429,22 +426,7 @@
                     refreshToken:
                       type: string
                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkwN2I0ZTk0LWZjMjAtNGZmMi05YzNlLWVlNGFmN2FjZTAwYyIsImlhdCI6MTczNDQ3MTA3MCwiZXhwIjoxNzM1MDc1ODcwfQ.9W54La-NAMTAiKA7aC3FTaX5AmVB6p5DcBGQaCXcrDI"
-      400:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                message:
-                  type: string
-        x-errors:
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
+
       401:
         description: Various error scenarios, check yaml files.
         content:
@@ -467,6 +449,10 @@
             message: "Refresh token has expired, login again."
           - code: "UNAUTHORIZED"
             message: "Not authorized"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
       500:
         description: Unexpected server error
         content:
@@ -506,22 +492,6 @@
                   type: string
                   example: "SUCCESS"
 
-      400:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                message:
-                  type: string
-        x-errors:
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
       401:
         description: Various error scenarios, check yaml files.
         content:
@@ -540,19 +510,13 @@
             message: "Access token expired"
           - code: "CANNOT_DECODE_TOKEN"
             message: "Cannot decode refresh token"
-      404:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  example: "NOT_FOUND"
-                message:
-                  type: string
-                  example: "User not found"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
+
       500:
         description: Unexpected server error
         content:
@@ -606,10 +570,6 @@
         x-errors:
           - code: "VALIDATION_REQUEST_ERROR"
             message: "Name must be valid, Password must be between 5 and 20 characters"
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
           - code: "MAX_ADMINS"
             message: "Maximum number of admins in the system is 3"
       401:
@@ -632,8 +592,14 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       404:
-        description: Various error scenarios, check yaml files.
+        description: User to restore not found
         content:
           application/json:
             schema:
@@ -718,8 +684,14 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       404:
-        description: Various error scenarios, check yaml files.
+        description: User to deactivate not found
         content:
           application/json:
             schema:
@@ -804,8 +776,14 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       404:
-        description: Various error scenarios, check yaml files.
+        description: User to activate not found
         content:
           application/json:
             schema:
@@ -888,12 +866,8 @@
         x-errors:
           - code: "VALIDATION_REQUEST_ERROR"
             message: "Name must be valid, Password must be between 5 and 20 characters"
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
           - code: "EMAIL_IN_USE"
             message: "Email already in use"
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
           - code: "MAX_ADMINS"
             message: "Maximum number of admins in the system is 3"
       401:
@@ -916,6 +890,12 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -994,10 +974,6 @@
         x-errors:
           - code: "VALIDATION_REQUEST_ERROR"
             message: "Name must be valid, Password must be between 5 and 20 characters"
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
       401:
         description: Various error scenarios, check yaml files.
         content:
@@ -1016,20 +992,12 @@
             message: "Access token expired"
           - code: "CANNOT_DECODE_TOKEN"
             message: "Cannot decode refresh token"
-
-      404:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  example: "NOT_FOUND"
-                message:
-                  type: string
-                  example: "User not found"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -1049,14 +1017,6 @@
     summary: Reset password
     tags:
       - Authentication module
-    parameters:
-      - name: Authorization
-        in: header
-        required: true
-        description: Bearer token (e.g., `Bearer {access_token}`)
-        schema:
-          type: string
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     requestBody:
       required: true
       content:
@@ -1101,27 +1061,8 @@
             message: "Account has been deleted, contact support team."
           - code: "ACCOUNT_NOT_ACTIVATED"
             message: "Account exists but has not been activated, check your email."
-      401:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                message:
-                  type: string
-        x-errors:
-          - code: "NO_ACCESS_TOKEN"
-            message: "No access token"
-          - code: "ACCESS_TOKEN_EXPIRED"
-            message: "Access token expired"
-          - code: "CANNOT_DECODE_TOKEN"
-            message: "Cannot decode refresh token"
-
       404:
-        description: Various error scenarios, check yaml files.
+        description: User not found.
         content:
           application/json:
             schema:
@@ -1204,10 +1145,6 @@
         x-errors:
           - code: "VALIDATION_REQUEST_ERROR"
             message: "Code must be valid, Password must be between 5 and 20 characters"
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
           - code: "PASSWORD_DOES_NOT_MATCH"
             message: "The password provided should match the old password"
           - code: "PASSWORDS_MUST_BE_THE_SAME"
@@ -1232,20 +1169,12 @@
             message: "Access token expired"
           - code: "CANNOT_DECODE_TOKEN"
             message: "Cannot decode refresh token"
-
-      404:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  example: "NOT_FOUND"
-                message:
-                  type: string
-                  example: "User not found"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -1313,10 +1242,6 @@
         x-errors:
           - code: "VALIDATION_REQUEST_ERROR"
             message: "Code must be valid, Password must be between 5 and 20 characters"
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
           - code: "PASSWORDS_MUST_BE_THE_SAME"
             message: "NewPassword and ConfirmNewPassword should be the same"
           - code: "PASSWORD_EXIST_ALREADY"
@@ -1341,20 +1266,12 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
-
-      404:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  example: "NOT_FOUND"
-                message:
-                  type: string
-                  example: "User not found"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -1408,24 +1325,6 @@
                     type:
                       type: string
                       example: "Client"
-      400:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                message:
-                  type: string
-        x-errors:
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
-          - code: "PASSWORD_DOES_NOT_MATCH"
-            message: "The password provided should match the old password"
       401:
         description: Various error scenarios, check yaml files.
         content:
@@ -1444,20 +1343,12 @@
             message: "Access token expired"
           - code: "CANNOT_DECODE_TOKEN"
             message: "Cannot decode refresh token"
-
-      404:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  example: "NOT_FOUND"
-                message:
-                  type: string
-                  example: "User not found"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -1502,23 +1393,6 @@
                     hasPassword:
                       type: boolean
                       example: true
-
-      400:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                message:
-                  type: string
-        x-errors:
-          - code: "ACCOUNT_DELETED"
-            message: "Account has been deleted, contact support team."
-          - code: "ACCOUNT_NOT_ACTIVATED"
-            message: "Account exists but has not been activated, check your email."
       401:
         description: Various error scenarios, check yaml files.
         content:
@@ -1537,20 +1411,12 @@
             message: "Access token expired"
           - code: "CANNOT_DECODE_TOKEN"
             message: "Cannot decode refresh token"
-
-      404:
-        description: Various error scenarios, check yaml files.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                code:
-                  type: string
-                  example: "NOT_FOUND"
-                message:
-                  type: string
-                  example: "User not found"
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -1660,6 +1526,12 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       500:
         description: Unexpected server error
         content:
@@ -1731,6 +1603,12 @@
             message: "Cannot decode refresh token"
           - code: "NOT_ALLOWED"
             message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
       404:
         description: Various error scenarios, check yaml files.
         content:

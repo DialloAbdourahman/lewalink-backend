@@ -1,17 +1,12 @@
+import { User } from "@prisma/client";
 import { app } from "./app";
 import { prisma } from "./prisma";
 require("dotenv").config();
 
-interface UserPayload {
-  id: string;
-  email: string;
-  type: string;
-}
-
 declare global {
   namespace Express {
     interface Request {
-      currentUser?: UserPayload;
+      currentUser?: User;
     }
   }
 }

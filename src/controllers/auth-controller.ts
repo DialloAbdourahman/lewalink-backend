@@ -200,46 +200,11 @@ const signin = async (req: Request, res: Response) => {
 };
 
 const getProfile = async (req: Request, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.currentUser?.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      type: true,
-      isActive: true,
-      isDeleted: true,
-    },
-  });
-
-  if (!user) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
-    return;
-  }
-
-  if (!user?.isActive) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_NOT_ACTIVATED,
-      "Activate your account"
-    );
-    return;
-  }
-
-  if (user?.isDeleted) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_DELETED,
-      "Your account has been deleted, contact support."
-    );
-    return;
-  }
-
   const data: UserReturned = {
-    id: user.id,
-    name: user.name || "",
-    email: user.email,
-    type: user.type,
+    id: req.currentUser!.id,
+    name: req.currentUser!.name || "",
+    email: req.currentUser!.email,
+    type: req.currentUser!.type,
   };
 
   OrchestrationResult.item(res, data, 200);
@@ -338,34 +303,7 @@ const resetPassword = async (req: Request, res: Response) => {
 const updatePassword = async (req: Request, res: Response) => {
   let { oldPassword, newPassword, confirmNewPassword } = req.body;
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.currentUser?.id },
-  });
-
-  if (!user) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
-    return;
-  }
-
-  if (!user?.isActive) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_NOT_ACTIVATED,
-      "Activate your account"
-    );
-    return;
-  }
-
-  if (user?.isDeleted) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_DELETED,
-      "Your account has been deleted, contact support."
-    );
-    return;
-  }
-
-  if (!user.password) {
+  if (!req.currentUser!.password) {
     OrchestrationResult.badRequest(
       res,
       CODES.NO_PASSWORD_TO_ACCOUNT,
@@ -374,7 +312,10 @@ const updatePassword = async (req: Request, res: Response) => {
     return;
   }
 
-  const match = await PasswordManager.compare(user.password, oldPassword);
+  const match = await PasswordManager.compare(
+    req.currentUser!.password,
+    oldPassword
+  );
   if (!match) {
     OrchestrationResult.badRequest(
       res,
@@ -397,7 +338,7 @@ const updatePassword = async (req: Request, res: Response) => {
 
   await prisma.user.update({
     where: {
-      id: user.id,
+      id: req.currentUser!.id,
     },
     data: {
       password,
@@ -410,36 +351,9 @@ const updatePassword = async (req: Request, res: Response) => {
 const updateAccount = async (req: Request, res: Response) => {
   let { name } = req.body;
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.currentUser?.id },
-  });
-
-  if (!user) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
-    return;
-  }
-
-  if (!user?.isActive) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_NOT_ACTIVATED,
-      "Activate your account"
-    );
-    return;
-  }
-
-  if (user?.isDeleted) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_DELETED,
-      "Your account has been deleted, contact support."
-    );
-    return;
-  }
-
   const updateduser = await prisma.user.update({
     where: {
-      id: user.id,
+      id: req.currentUser!.id,
     },
     data: {
       name,
@@ -463,36 +377,9 @@ const updateAccount = async (req: Request, res: Response) => {
 };
 
 const logout = async (req: Request, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.currentUser?.id },
-  });
-
-  if (!user) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
-    return;
-  }
-
-  if (!user?.isActive) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_NOT_ACTIVATED,
-      "Activate your account"
-    );
-    return;
-  }
-
-  if (user?.isDeleted) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_DELETED,
-      "Your account has been deleted, contact support."
-    );
-    return;
-  }
-
   await prisma.user.update({
     where: {
-      id: user.id,
+      id: req.currentUser!.id,
     },
     data: {
       token: null,
@@ -574,7 +461,7 @@ const refresh = async (req: Request, res: Response) => {
     }
 
     if (!foundUser?.isActive) {
-      OrchestrationResult.badRequest(
+      OrchestrationResult.unAuthorized(
         res,
         CODES.ACCOUNT_NOT_ACTIVATED,
         "Activate your account"
@@ -583,7 +470,7 @@ const refresh = async (req: Request, res: Response) => {
     }
 
     if (foundUser?.isDeleted) {
-      OrchestrationResult.badRequest(
+      OrchestrationResult.unAuthorized(
         res,
         CODES.ACCOUNT_DELETED,
         "Your account has been deleted, contact support."
@@ -985,35 +872,8 @@ const oauthGoogle = async (req: Request, res: Response) => {
 };
 
 const hasPassword = async (req: Request, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.currentUser?.id },
-  });
-
-  if (!user) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
-    return;
-  }
-
-  if (!user?.isActive) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_NOT_ACTIVATED,
-      "Activate your account"
-    );
-    return;
-  }
-
-  if (user?.isDeleted) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_DELETED,
-      "Your account has been deleted, contact support."
-    );
-    return;
-  }
-
   const data = {
-    hasPassword: !!user.password,
+    hasPassword: !!req.currentUser!.password,
   };
 
   OrchestrationResult.item(res, data, 200);
@@ -1022,34 +882,7 @@ const hasPassword = async (req: Request, res: Response) => {
 const addPassword = async (req: Request, res: Response) => {
   let { newPassword, confirmNewPassword } = req.body;
 
-  const user = await prisma.user.findUnique({
-    where: { id: req.currentUser?.id },
-  });
-
-  if (!user) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "User not found");
-    return;
-  }
-
-  if (!user?.isActive) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_NOT_ACTIVATED,
-      "Activate your account"
-    );
-    return;
-  }
-
-  if (user?.isDeleted) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.ACCOUNT_DELETED,
-      "Your account has been deleted, contact support."
-    );
-    return;
-  }
-
-  if (user.password) {
+  if (req.currentUser!.password) {
     OrchestrationResult.badRequest(
       res,
       CODES.PASSWORD_EXIST_ALREADY,
@@ -1071,7 +904,7 @@ const addPassword = async (req: Request, res: Response) => {
 
   await prisma.user.update({
     where: {
-      id: user.id,
+      id: req.currentUser!.id,
     },
     data: {
       password,

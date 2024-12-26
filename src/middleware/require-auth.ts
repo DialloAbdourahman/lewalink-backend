@@ -2,8 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { CODES } from "../enums/codes";
 import { OrchestrationResult } from "../utils/orchestration-result";
+import { prisma } from "../prisma";
 
-export const requireAuth = (
+export const requireAuth = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -25,13 +26,38 @@ export const requireAuth = (
       process.env.ACCESS_TOKEN_JWT_KEY as string
     );
 
-    const { id, email, type } = decoded;
+    const { id } = decoded;
 
-    req.currentUser = {
-      id,
-      email,
-      type,
-    };
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!user) {
+      OrchestrationResult.unAuthorized(res, CODES.NOT_FOUND, "User not found");
+      return;
+    }
+
+    if (!user?.isActive) {
+      OrchestrationResult.unAuthorized(
+        res,
+        CODES.ACCOUNT_NOT_ACTIVATED,
+        "Activate your account"
+      );
+      return;
+    }
+
+    if (user?.isDeleted) {
+      OrchestrationResult.unAuthorized(
+        res,
+        CODES.ACCOUNT_DELETED,
+        "Your account has been deleted, contact support."
+      );
+      return;
+    }
+
+    req.currentUser = user;
 
     next();
   } catch (error: any) {

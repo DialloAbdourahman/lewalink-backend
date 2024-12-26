@@ -13,7 +13,7 @@ it("Should not login user whose account has not been activated", async () => {
     .get("/api/auth/v1/profile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_NOT_ACTIVATED);
 });
 
@@ -24,7 +24,7 @@ it("Should not login user whose account has been deleted", async () => {
     .get("/api/auth/v1/profile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_DELETED);
 });
 
@@ -35,7 +35,7 @@ it("Should not get the profile of a user that doesn't exist", async () => {
     .get("/api/auth/v1/profile")
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
-  expect(response.status).toEqual(404);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.NOT_FOUND);
 });
 

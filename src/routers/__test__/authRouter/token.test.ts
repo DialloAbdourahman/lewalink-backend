@@ -23,7 +23,7 @@ it("Should not refresh token of a user whose account has not been activated", as
     .set("Authorization", `Bearer ${refreshToken}`)
     .send();
 
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_NOT_ACTIVATED);
 
   const user = await prisma.user.findUnique({
@@ -41,7 +41,7 @@ it("Should not refresh the token of a user whose account has been deleted", asyn
     .post("/api/auth/v1/token")
     .set("Authorization", `Bearer ${refreshToken}`)
     .send();
-  expect(response.status).toEqual(400);
+  expect(response.status).toEqual(401);
   expect(response.body.code).toBe(CODES.ACCOUNT_DELETED);
 
   const user = await prisma.user.findUnique({

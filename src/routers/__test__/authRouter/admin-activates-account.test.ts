@@ -21,10 +21,11 @@ it("Should not allow a user to activate another user's account if he is unauthen
 });
 
 it("Should not allow a normal user to activate an account", async () => {
-  const { createdUser, accessToken } = await loginUser(false, false);
+  const { accessToken } = await loginUser(false, true);
+  const { createdUser: userToBeActivated } = await loginUser(false, false);
 
   const response = await request(app)
-    .post(`/api/auth/v1/admin-activates-account/${createdUser.id}`)
+    .post(`/api/auth/v1/admin-activates-account/${userToBeActivated.id}`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
 
@@ -32,7 +33,7 @@ it("Should not allow a normal user to activate an account", async () => {
   expect(response.body.code).toBe(CODES.NOT_ALLOWED);
 
   const activatedUser = await prisma.user.findUnique({
-    where: { id: createdUser.id },
+    where: { id: userToBeActivated.id },
   });
   expect(activatedUser?.isActive).toBe(false);
 });
