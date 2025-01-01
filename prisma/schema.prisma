@@ -71,6 +71,7 @@ model Program {
   name        String
   description String
   type        ProgramType
+  duration    Float
   isDeleted   Boolean     @default(false)
 
   admin   User   @relation(fields: [adminId], references: [id])
@@ -98,6 +99,30 @@ model SchoolProgram {
   schoolProgramCourses SchoolProgramCourse[]
 }
 
+model Course {
+  id          String  @id @default(uuid())
+  code        String
+  title       String
+  description String
+  credits     Int
+  isDeleted   Boolean @default(false)
+
+  admin   User   @relation(fields: [adminId], references: [id])
+  adminId String
+
+  schoolProgramCourses SchoolProgramCourse[]
+}
+
+model SchoolProgramCourse {
+  id        String  @id @default(uuid())
+  isDeleted Boolean @default(false)
+
+  course          Course        @relation(fields: [courseId], references: [id])
+  courseId        String
+  schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id])
+  schoolProgramId String
+}
+
 model SchoolRating {
   id        String  @id @default(uuid())
   stars     Int
@@ -121,29 +146,5 @@ model SchoolProgramRating {
   clientId String
 
   schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id], onDelete: Cascade)
-  schoolProgramId String
-}
-
-model Course {
-  id          String  @id @default(uuid())
-  code        String
-  title       String
-  description String
-  credits     Int
-  isDeleted   Boolean @default(false)
-
-  admin   User   @relation(fields: [adminId], references: [id])
-  adminId String
-
-  schoolProgramCourses SchoolProgramCourse[]
-}
-
-model SchoolProgramCourse {
-  id        String  @id @default(uuid())
-  isDeleted Boolean @default(false)
-
-  course          Course        @relation(fields: [courseId], references: [id])
-  courseId        String
-  schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id])
   schoolProgramId String
 }

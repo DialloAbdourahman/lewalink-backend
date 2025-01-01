@@ -105,6 +105,22 @@ const start = async () => {
 
 start();
 
-// Work on tests.
-// Work on social media auth for the clients only.
-// Think on adding another role like a publisher or a manager to manage schools and courses. Not users.
+// Work on a school router, don't forget to manage images and finally test it using postman.
+
+// Create a swagger for all these new routes if the frontend guys are ready or just keep going do it next time.
+
+// Uncomment schoolProgram router and controller, complete it and test it using postman.
+// Complete the schoolProgramCourse (router and controller) and test using postman.
+
+// Create a swagger for all these new routes.
+
+// Complete SchoolRating (router and controller) and test using postman.
+// Complete the SchoolProgramRating (router and controller) and test using postman.
+
+// Create a swagger for all these new routes.
+
+// Consider if we should add another user called editor and modify the existing tests and routes to include him.
+
+// Write tests for all the new routes.
+
+// Consider primary admin and stuff.

@@ -97,3 +97,33 @@ export const validateResetPassword: ValidatorMiddleware[] = [
     .withMessage("Password must be between 4 and 20 characters"),
   validateRequest,
 ];
+
+export const validateCreateCourse: ValidatorMiddleware[] = [
+  body("code")
+    .isLength({ min: 3, max: 5 })
+    .withMessage("Code must be between 3 and 5 characters"),
+
+  body("title")
+    .isLength({ min: 4, max: 50 })
+    .withMessage("Title must be between 4 and 50 characters"),
+  body("description").exists().withMessage("Provide a description"),
+  body("credits").exists().isInt().withMessage("Provide a credits"),
+  validateRequest,
+];
+
+export const validateCreateProgram: ValidatorMiddleware[] = [
+  body("type").exists().withMessage("Provide a type"),
+  body("name")
+    .isLength({ min: 4, max: 50 })
+    .withMessage("Name must be between 4 and 50 characters"),
+  body("description").exists().withMessage("Provide a description"),
+  body("duration").exists().isFloat().withMessage("Provide a duration"),
+  validateRequest,
+];
+
+export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
+  body("price").exists().isFloat().withMessage("Provide a price"),
+  body("schoolId").exists().withMessage("Provide a school id"),
+  body("programId").exists().withMessage("Provide a program id"),
+  validateRequest,
+];
