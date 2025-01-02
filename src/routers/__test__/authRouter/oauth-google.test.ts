@@ -14,7 +14,17 @@ it("Should not google auth a user if all information is not entered", async () =
 });
 
 it("Should not allow an admin to use this route", async () => {
-  await loginUser(true, true, false, false, mockedEmail);
+  await loginUser(UserType.Admin, true, false, false, mockedEmail);
+
+  const response = await request(app).post("/api/auth/v1/oauth-google").send({
+    code: "asdf",
+  });
+  expect(response.status).toEqual(400);
+  expect(response.body.code).toBe(CODES.CLIENT_ONLY);
+});
+
+it("Should not allow an editor to use this route", async () => {
+  await loginUser(UserType.Editor, true, false, false, mockedEmail);
 
   const response = await request(app).post("/api/auth/v1/oauth-google").send({
     code: "asdf",
@@ -24,7 +34,7 @@ it("Should not allow an admin to use this route", async () => {
 });
 
 it("Should not google auth user whose account has not been activated", async () => {
-  await loginUser(false, false, false, false, mockedEmail);
+  await loginUser(UserType.Client, false, false, false, mockedEmail);
 
   const response = await request(app).post("/api/auth/v1/oauth-google").send({
     code: "asdf",
@@ -34,7 +44,7 @@ it("Should not google auth user whose account has not been activated", async () 
 });
 
 it("Should not google auth user whose account has not been deleted", async () => {
-  await loginUser(false, true, true, false, mockedEmail);
+  await loginUser(UserType.Client, true, true, false, mockedEmail);
 
   const response = await request(app).post("/api/auth/v1/oauth-google").send({
     code: "asdf",

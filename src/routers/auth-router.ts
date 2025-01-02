@@ -53,6 +53,13 @@ router
     validateSignup,
     authController.createAdmin
   ) // TESTED
+  .post(
+    "/create-editor",
+    requireAuth,
+    verifyRoles([UserType.Admin]),
+    validateSignup,
+    authController.createEditor
+  ) // TESTED
   .post("/oauth-google", validateOauth, authController.oauthGoogle) // TESTED
   .patch(
     "/update",

@@ -42,7 +42,7 @@ export const createUser = async (
 };
 
 export const loginUser = async (
-  isAdmin: boolean = false,
+  userType: UserType = UserType.Client,
   isActive: boolean = true,
   isDeleted: boolean = false,
   noPassword: boolean = false,
@@ -55,42 +55,37 @@ export const loginUser = async (
     testEmail
   );
 
-  let { accessToken, refreshToken } = generateTokens({
-    id: createdUser.id,
-    email: createdUser.email,
-    type: createdUser.type,
+  const userWithType = await prisma.user.update({
+    where: {
+      id: createdUser.id,
+    },
+    data: {
+      type: userType,
+    },
   });
 
-  if (isAdmin) {
-    const adminUser = await prisma.user.update({
-      where: {
-        id: createdUser.id,
-      },
-      data: {
-        type: UserType.Admin,
-      },
-    });
-
-    const tokens = generateTokens({
-      id: adminUser.id,
-      email: adminUser.email,
-      type: adminUser.type,
-    });
-
-    accessToken = tokens.accessToken;
-    refreshToken = tokens.refreshToken;
-  }
+  let { accessToken, refreshToken } = generateTokens({
+    id: userWithType.id,
+    email: userWithType.email,
+    type: userWithType.type,
+  });
 
   await prisma.user.update({
     where: {
-      id: createdUser.id,
+      id: userWithType.id,
     },
     data: {
       token: refreshToken,
     },
   });
 
-  return { createdUser, planTextPassword, accessToken, refreshToken, password };
+  return {
+    createdUser: userWithType,
+    planTextPassword,
+    accessToken,
+    refreshToken,
+    password,
+  };
 };
 
 export const userDoesNotExistLogin = async () => {

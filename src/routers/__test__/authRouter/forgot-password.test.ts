@@ -2,9 +2,10 @@ import { app } from "../../../app";
 import request from "supertest";
 import { CODES } from "../../../enums/codes";
 import { loginUser } from "../../../test/helpers/auth-tests";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not generate code if account has not been activated", async () => {
-  const { createdUser } = await loginUser(false, false);
+  const { createdUser } = await loginUser(UserType.Client, false);
 
   const response = await request(app)
     .post("/api/auth/v1/forgot-password")
@@ -16,7 +17,7 @@ it("Should not generate code if account has not been activated", async () => {
 });
 
 it("Should not generate code if account has been deleted", async () => {
-  const { createdUser } = await loginUser(false, true, true);
+  const { createdUser } = await loginUser(UserType.Client, true, true);
 
   const response = await request(app)
     .post("/api/auth/v1/forgot-password")

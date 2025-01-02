@@ -6,9 +6,10 @@ import {
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not add password with wrong information", async () => {
-  const { accessToken } = await loginUser(false, true, false, true);
+  const { accessToken } = await loginUser(UserType.Client, true, false, true);
 
   const response2 = await request(app)
     .patch("/api/auth/v1/add-password")
@@ -37,7 +38,7 @@ it("Should not add password with wrong information", async () => {
 });
 
 it("Should not add password if the two new passwords don't match", async () => {
-  const { accessToken } = await loginUser(false, true, false, true);
+  const { accessToken } = await loginUser(UserType.Client, true, false, true);
 
   const response = await request(app)
     .patch("/api/auth/v1/add-password")
@@ -51,7 +52,7 @@ it("Should not add password if the two new passwords don't match", async () => {
 });
 
 it("Should not add the password of a user whose account has not been activated", async () => {
-  const { accessToken } = await loginUser(false, false, false, true);
+  const { accessToken } = await loginUser(UserType.Client, false, false, true);
 
   const response = await request(app)
     .patch("/api/auth/v1/add-password")
@@ -65,7 +66,7 @@ it("Should not add the password of a user whose account has not been activated",
 });
 
 it("Should not add the password of a user whose account has been deleted", async () => {
-  const { accessToken } = await loginUser(false, true, true, true);
+  const { accessToken } = await loginUser(UserType.Client, true, true, true);
 
   const response = await request(app)
     .patch("/api/auth/v1/add-password")
@@ -102,7 +103,7 @@ it("Should not add password of an unauthenticated user", async () => {
 });
 
 it("Should not allow a user with a password to use this route", async () => {
-  const { accessToken } = await loginUser(false, true, false);
+  const { accessToken } = await loginUser(UserType.Client, true, false);
 
   const response = await request(app)
     .patch("/api/auth/v1/add-password")
@@ -116,7 +117,21 @@ it("Should not allow a user with a password to use this route", async () => {
 });
 
 it("Should not allow an admin user to use this route", async () => {
-  const { accessToken } = await loginUser(true, true, false);
+  const { accessToken } = await loginUser(UserType.Admin, true, false);
+
+  const response = await request(app)
+    .patch("/api/auth/v1/add-password")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({
+      newPassword: "asdfasdfd",
+      confirmNewPassword: "asdfasdfd",
+    });
+  expect(response.status).toEqual(401);
+  expect(response.body.code).toBe(CODES.NOT_ALLOWED);
+});
+
+it("Should not allow an editor user to use this route", async () => {
+  const { accessToken } = await loginUser(UserType.Editor, true, false);
 
   const response = await request(app)
     .patch("/api/auth/v1/add-password")
@@ -131,7 +146,7 @@ it("Should not allow an admin user to use this route", async () => {
 
 it("Should update password if all information is provided", async () => {
   const { accessToken, createdUser } = await loginUser(
-    false,
+    UserType.Client,
     true,
     false,
     true

@@ -5,10 +5,10 @@ import { loginUser } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
 import { UserType } from "../../../enums/user-types";
 
-it("Should not allow a user to create an admin if he is unauthenticated", async () => {
+it("Should not allow a user to create an editor if he is unauthenticated", async () => {
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
-  const response = await request(app).post(`/api/auth/v1/create-admin`).send({
+  const response = await request(app).post(`/api/auth/v1/create-editor`).send({
     name: "test",
     email: newAdminEmail,
     password: "asdfasdfsadf",
@@ -23,12 +23,12 @@ it("Should not allow a user to create an admin if he is unauthenticated", async 
   expect(createdAdmin).toBe(null);
 });
 
-it("Should not allow a normal user to create an admin", async () => {
+it("Should not allow a normal user to create an editor", async () => {
   const { accessToken } = await loginUser(UserType.Client, true, false);
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
   const response = await request(app)
-    .post(`/api/auth/v1/create-admin`)
+    .post(`/api/auth/v1/create-editor`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send({
       name: "test",
@@ -45,12 +45,12 @@ it("Should not allow a normal user to create an admin", async () => {
   expect(createdAdmin).toBe(null);
 });
 
-it("Should not allow an editor user to create an admin", async () => {
+it("Should not allow an editor user to create an editor", async () => {
   const { accessToken } = await loginUser(UserType.Editor, true, false);
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
   const response = await request(app)
-    .post(`/api/auth/v1/create-admin`)
+    .post(`/api/auth/v1/create-editor`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send({
       name: "test",
@@ -67,19 +67,19 @@ it("Should not allow an editor user to create an admin", async () => {
   expect(createdAdmin).toBe(null);
 });
 
-it("Should not allow an admin to create another admin if the number of admin limit has been reached", async () => {
+it("Should not allow an admin to create another editor if the number of editor limit has been reached", async () => {
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
   // Normal non-deleted admins
-  for (let i = 0; i < Number(process.env.TOTAL_ADMINS_IN_SYSTEM); i++) {
-    await loginUser(UserType.Admin);
+  for (let i = 0; i < Number(process.env.TOTAL_EDITORS_IN_SYSTEM); i++) {
+    await loginUser(UserType.Editor);
   }
 
   // Admin user to perform action
   const { accessToken } = await loginUser(UserType.Admin);
 
   const response = await request(app)
-    .post(`/api/auth/v1/create-admin`)
+    .post(`/api/auth/v1/create-editor`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send({
       name: "test",
@@ -96,12 +96,12 @@ it("Should not allow an admin to create another admin if the number of admin lim
   expect(createdAdmin).toBe(null);
 });
 
-it("Should allow admin to create another admin", async () => {
+it("Should allow admin to create an editor", async () => {
   const { accessToken } = await loginUser(UserType.Admin);
   const newAdminEmail = "udfhsihdfiuashdf@dsfasfd.com";
 
   const response = await request(app)
-    .post(`/api/auth/v1/create-admin`)
+    .post(`/api/auth/v1/create-editor`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send({
       name: "test",
@@ -117,7 +117,7 @@ it("Should allow admin to create another admin", async () => {
   });
   expect(createdAdmin).toBeDefined();
   expect(createdAdmin?.email).toBe(newAdminEmail);
-  expect(createdAdmin?.type).toBe(UserType.Admin);
+  expect(createdAdmin?.type).toBe(UserType.Editor);
   expect(createdAdmin?.isActive).toBe(false);
   expect(createdAdmin?.isDeleted).toBe(false);
 });

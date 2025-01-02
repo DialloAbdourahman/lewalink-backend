@@ -13,7 +13,7 @@ const createProgram = async (req: Request, res: Response) => {
       type,
       description,
       duration,
-      adminId: req.currentUser?.id as string,
+      creatorId: req.currentUser?.id as string,
     },
     select: {
       id: true,
@@ -22,7 +22,7 @@ const createProgram = async (req: Request, res: Response) => {
       type: true,
       duration: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -72,7 +72,7 @@ const updateProgram = async (req: Request, res: Response) => {
       type: true,
       duration: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -118,7 +118,7 @@ const deleteProgram = async (req: Request, res: Response) => {
       type: true,
       duration: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -164,7 +164,7 @@ const restoreProgram = async (req: Request, res: Response) => {
       type: true,
       duration: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -215,7 +215,7 @@ const getPrograms = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, programs, count, itemsPerPage, page);
 };
 
-const adminGetPrograms = async (req: Request, res: Response) => {
+const superUserGetPrograms = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
@@ -238,7 +238,7 @@ const adminGetPrograms = async (req: Request, res: Response) => {
       type: true,
       duration: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -290,7 +290,7 @@ const getProgram = async (req: Request, res: Response) => {
   OrchestrationResult.item(res, program, 200);
 };
 
-const adminGetProgram = async (req: Request, res: Response) => {
+const superUserGetProgram = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   if (!id) {
@@ -311,7 +311,7 @@ const adminGetProgram = async (req: Request, res: Response) => {
       type: true,
       duration: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -335,7 +335,7 @@ export default {
   deleteProgram,
   restoreProgram,
   getPrograms,
-  adminGetPrograms,
+  superUserGetProgram,
   getProgram,
-  adminGetProgram,
+  superUserGetPrograms,
 };

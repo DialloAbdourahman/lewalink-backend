@@ -771,6 +771,85 @@ const createAdmin = async (req: Request, res: Response) => {
   OrchestrationResult.success(res, 201);
 };
 
+const createEditor = async (req: Request, res: Response) => {
+  let { email, password, name } = req.body;
+
+  const editorsCount = await prisma.user.count({
+    where: {
+      type: UserType.Editor,
+      isDeleted: false,
+    },
+  });
+
+  if (editorsCount >= Number(process.env.TOTAL_EDITORS_IN_SYSTEM)) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.MAX_ADMINS,
+      "Maximum number of admins in the system is 3"
+    );
+    return;
+  }
+
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  if (existingUser) {
+    if (existingUser.isDeleted) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_DELETED,
+        "Account has been deleted, contact support team."
+      );
+      return;
+    }
+
+    if (existingUser.isActive) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.EMAIL_IN_USE,
+        "Email exist already in user"
+      );
+      return;
+    } else {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.ACCOUNT_NOT_ACTIVATED,
+        "Account exist already but has not been activated, check email."
+      );
+      return;
+    }
+  }
+
+  password = await PasswordManager.toHash(password);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      name,
+      password,
+      type: UserType.Editor,
+      adminId: req.currentUser?.id,
+    },
+  });
+
+  const { code } = JWTCodes.generate(
+    { id: user.id, email: user.email },
+    process.env.ACTIVATE_ACCOUNT_JWT_KEY as string
+  );
+
+  const awsHelper = new AwsSesHelper();
+  await awsHelper.sendActivateAccountEmail(
+    user.email,
+    user.name || "user",
+    code
+  );
+
+  OrchestrationResult.success(res, 201);
+};
+
 const oauthGoogle = async (req: Request, res: Response) => {
   let { code } = req.body;
   let googleUser;
@@ -805,7 +884,7 @@ const oauthGoogle = async (req: Request, res: Response) => {
   let user;
 
   if (existingUser) {
-    if (existingUser.type === "Admin") {
+    if (existingUser.type !== "Client") {
       OrchestrationResult.badRequest(
         res,
         CODES.CLIENT_ONLY,
@@ -931,10 +1010,8 @@ export default {
   adminActivateAccount,
   adminDeactivateAccount,
   createAdmin,
+  createEditor,
   oauthGoogle,
   hasPassword,
   addPassword,
 };
-
-// Swagger
-//  => add password

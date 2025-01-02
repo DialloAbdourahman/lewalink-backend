@@ -6,6 +6,7 @@ import {
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
+import { UserType } from "../../../enums/user-types";
 
 export const wait = (sec: number) => {
   return new Promise((resolve) => {
@@ -16,7 +17,7 @@ export const wait = (sec: number) => {
 };
 
 it("Should not refresh token of a user whose account has not been activated", async () => {
-  const { createdUser, refreshToken } = await loginUser(false, false);
+  const { createdUser, refreshToken } = await loginUser(UserType.Client, false);
 
   const response = await request(app)
     .post("/api/auth/v1/token")
@@ -35,7 +36,11 @@ it("Should not refresh token of a user whose account has not been activated", as
 });
 
 it("Should not refresh the token of a user whose account has been deleted", async () => {
-  const { refreshToken, createdUser } = await loginUser(false, true, true);
+  const { refreshToken, createdUser } = await loginUser(
+    UserType.Client,
+    true,
+    true
+  );
 
   const response = await request(app)
     .post("/api/auth/v1/token")

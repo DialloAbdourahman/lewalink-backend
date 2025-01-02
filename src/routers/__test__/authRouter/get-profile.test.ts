@@ -5,9 +5,10 @@ import {
   loginUser,
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not login user whose account has not been activated", async () => {
-  const { accessToken } = await loginUser(false, false);
+  const { accessToken } = await loginUser(UserType.Client, false);
 
   const response = await request(app)
     .get("/api/auth/v1/profile")
@@ -18,7 +19,7 @@ it("Should not login user whose account has not been activated", async () => {
 });
 
 it("Should not login user whose account has been deleted", async () => {
-  const { accessToken } = await loginUser(false, true, true);
+  const { accessToken } = await loginUser(UserType.Client, true, true);
 
   const response = await request(app)
     .get("/api/auth/v1/profile")

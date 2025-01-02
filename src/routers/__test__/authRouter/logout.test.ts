@@ -6,9 +6,10 @@ import {
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not logout user whose account has not been activated", async () => {
-  const { accessToken, createdUser } = await loginUser(false, false);
+  const { accessToken, createdUser } = await loginUser(UserType.Client, false);
 
   const response = await request(app)
     .post("/api/auth/v1/logout")
@@ -26,7 +27,11 @@ it("Should not logout user whose account has not been activated", async () => {
 });
 
 it("Should not logout user whose account has been deleted", async () => {
-  const { accessToken, createdUser } = await loginUser(false, true, true);
+  const { accessToken, createdUser } = await loginUser(
+    UserType.Client,
+    true,
+    true
+  );
 
   const response = await request(app)
     .post("/api/auth/v1/logout")

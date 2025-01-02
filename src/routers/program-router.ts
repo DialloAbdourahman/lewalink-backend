@@ -11,41 +11,41 @@ router
   .post(
     "/",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     validateCreateProgram,
     programController.createProgram
   )
   .post(
     "/restore/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     programController.restoreProgram
   )
   .patch(
     "/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     validateCreateProgram,
     programController.updateProgram
   )
   .get("/", programController.getPrograms)
   .get(
-    "/admin-get-programs",
+    "/super-user-get-programs",
     requireAuth,
-    verifyRoles([UserType.Admin]),
-    programController.adminGetPrograms
+    verifyRoles([UserType.Admin, UserType.Editor]),
+    programController.superUserGetPrograms
   )
   .get(
-    "/admin-get-program/:id",
+    "/super-user-get-program/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
-    programController.adminGetProgram
+    verifyRoles([UserType.Admin, UserType.Editor]),
+    programController.superUserGetProgram
   )
   .get("/:id", programController.getProgram)
   .delete(
     "/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     programController.deleteProgram
   );
 

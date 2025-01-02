@@ -12,7 +12,7 @@ it("Should not activate account if code is not provided.", async () => {
 });
 
 it("Should activate account if code is provided", async () => {
-  const { createdUser, planTextPassword } = await createUser();
+  const { createdUser } = await createUser();
 
   const { code } = JWTCodes.generate(
     { id: createdUser.id, email: createdUser.email },

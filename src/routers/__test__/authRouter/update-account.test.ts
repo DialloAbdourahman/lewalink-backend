@@ -5,9 +5,10 @@ import {
   loginUser,
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not update account information is missing", async () => {
-  const { accessToken } = await loginUser(false, true);
+  const { accessToken } = await loginUser(UserType.Client, true);
 
   const response = await request(app)
     .patch("/api/auth/v1/update")
@@ -18,7 +19,7 @@ it("Should not update account information is missing", async () => {
 });
 
 it("Should not update account of user whose account has not been activated", async () => {
-  const { accessToken } = await loginUser(false, false);
+  const { accessToken } = await loginUser(UserType.Client, false);
 
   const response = await request(app)
     .patch("/api/auth/v1/update")
@@ -31,7 +32,7 @@ it("Should not update account of user whose account has not been activated", asy
 });
 
 it("Should not update account of user whose account has been deleted", async () => {
-  const { accessToken } = await loginUser(false, true, true);
+  const { accessToken } = await loginUser(UserType.Client, true, true);
 
   const response = await request(app)
     .patch("/api/auth/v1/update")

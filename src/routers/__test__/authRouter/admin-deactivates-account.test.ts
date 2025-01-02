@@ -3,9 +3,10 @@ import request from "supertest";
 import { CODES } from "../../../enums/codes";
 import { loginUser } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not allow a user to deactivate another user's account if he is unauthenticated", async () => {
-  const { createdUser } = await loginUser(false, true);
+  const { createdUser } = await loginUser(UserType.Client, true);
 
   const response = await request(app)
     .post(`/api/auth/v1/admin-deactivates-account/${createdUser.id}`)
@@ -21,7 +22,24 @@ it("Should not allow a user to deactivate another user's account if he is unauth
 });
 
 it("Should not allow a normal user to deactivate an account", async () => {
-  const { createdUser, accessToken } = await loginUser(false, true);
+  const { createdUser, accessToken } = await loginUser(UserType.Client, true);
+
+  const response = await request(app)
+    .post(`/api/auth/v1/admin-deactivates-account/${createdUser.id}`)
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send();
+
+  expect(response.status).toEqual(401);
+  expect(response.body.code).toBe(CODES.NOT_ALLOWED);
+
+  const deactivatedUser = await prisma.user.findUnique({
+    where: { id: createdUser.id },
+  });
+  expect(deactivatedUser?.isActive).toBe(true);
+});
+
+it("Should not allow an editor user to deactivate an account", async () => {
+  const { createdUser, accessToken } = await loginUser(UserType.Editor, true);
 
   const response = await request(app)
     .post(`/api/auth/v1/admin-deactivates-account/${createdUser.id}`)
@@ -38,7 +56,7 @@ it("Should not allow a normal user to deactivate an account", async () => {
 });
 
 it("Should not allow an admin to deactivate the account of a non existing user ", async () => {
-  const { accessToken } = await loginUser(true);
+  const { accessToken } = await loginUser(UserType.Admin);
 
   const response = await request(app)
     .post(`/api/auth/v1/admin-deactivates-account/asdf`)
@@ -50,8 +68,8 @@ it("Should not allow an admin to deactivate the account of a non existing user "
 });
 
 it("Should allow admin to deactivate an account", async () => {
-  const { createdUser } = await loginUser(false, true);
-  const { accessToken } = await loginUser(true);
+  const { createdUser } = await loginUser(UserType.Client, true);
+  const { accessToken } = await loginUser(UserType.Admin);
 
   const response = await request(app)
     .post(`/api/auth/v1/admin-deactivates-account/${createdUser.id}`)

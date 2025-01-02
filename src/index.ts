@@ -69,6 +69,11 @@ const start = async () => {
     process.exit();
   }
 
+  if (!process.env.TOTAL_EDITORS_IN_SYSTEM) {
+    console.log("TOTAL_ADMINS_IN_SYSTEM must be defined.");
+    process.exit();
+  }
+
   if (!process.env.GOOGLE_CLIENT_ID) {
     console.log("GOOGLE_CLIENT_ID must be defined.");
     process.exit();
@@ -81,6 +86,26 @@ const start = async () => {
 
   if (!process.env.GOOGLE_REDIRECT_LINK) {
     console.log("GOOGLE_REDIRECT_LINK must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_BUCKET_NAME) {
+    console.log("AWS_BUCKET_NAME must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_BUCKET_REGION) {
+    console.log("AWS_BUCKET_REGION must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_ACCESS_KEY) {
+    console.log("AWS_ACCESS_KEY must be defined.");
+    process.exit();
+  }
+
+  if (!process.env.AWS_SECRET_KEY) {
+    console.log("AWS_SECRET_KEY must be defined.");
     process.exit();
   }
 
@@ -118,8 +143,6 @@ start();
 // Complete the SchoolProgramRating (router and controller) and test using postman.
 
 // Create a swagger for all these new routes.
-
-// Consider if we should add another user called editor and modify the existing tests and routes to include him.
 
 // Write tests for all the new routes.
 

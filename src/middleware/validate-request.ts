@@ -121,6 +121,18 @@ export const validateCreateProgram: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
+export const validateCreateSchool: ValidatorMiddleware[] = [
+  body("name")
+    .isLength({ min: 4, max: 50 })
+    .withMessage("Name must be between 4 and 50 characters"),
+  body("type").exists().withMessage("Provide a type"),
+  body("longitude").exists().isFloat().withMessage("Provide a longitude"),
+  body("latitude").exists().isFloat().withMessage("Provide a latitude"),
+  body("country").exists().withMessage("Provide a country"),
+  body("city").exists().withMessage("Provide a city"),
+  validateRequest,
+];
+
 export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
   body("price").exists().isFloat().withMessage("Provide a price"),
   body("schoolId").exists().withMessage("Provide a school id"),

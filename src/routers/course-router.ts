@@ -11,41 +11,41 @@ router
   .post(
     "/",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     validateCreateCourse,
     courseController.createCourse
   )
   .post(
     "/restore/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     courseController.restoreCourse
   )
   .patch(
     "/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     validateCreateCourse,
     courseController.updateCourse
   )
   .get("/", courseController.getCourses)
   .get(
-    "/admin-get-courses",
+    "/super-user-get-courses",
     requireAuth,
-    verifyRoles([UserType.Admin]),
-    courseController.adminGetCourses
+    verifyRoles([UserType.Admin, UserType.Editor]),
+    courseController.superUserGetCourses
   )
   .get("/:id", courseController.getCourse)
   .get(
-    "/admin-get-course/:id",
+    "/super-user-get-course/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
-    courseController.adminGetCourse
+    verifyRoles([UserType.Admin, UserType.Editor]),
+    courseController.superUserGetCourse
   )
   .delete(
     "/:id",
     requireAuth,
-    verifyRoles([UserType.Admin]),
+    verifyRoles([UserType.Admin, UserType.Editor]),
     courseController.deleteCourse
   );
 

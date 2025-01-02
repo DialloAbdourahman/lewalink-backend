@@ -10,6 +10,7 @@ datasource db {
 enum UserType {
   Admin
   Client
+  Editor
 }
 
 enum SchoolType {
@@ -56,11 +57,12 @@ model School {
   email       String?
   phoneNumber String?
   website     String?
+  description String?
   pictures    String[]
   isDeleted   Boolean    @default(false)
 
-  admin   User   @relation(fields: [adminId], references: [id])
-  adminId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String
 
   schoolPrograms SchoolProgram[]
   schoolRatings  SchoolRating[]
@@ -74,8 +76,8 @@ model Program {
   duration    Float
   isDeleted   Boolean     @default(false)
 
-  admin   User   @relation(fields: [adminId], references: [id])
-  adminId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String
 
   schoolPrograms SchoolProgram[]
 }
@@ -86,8 +88,8 @@ model SchoolProgram {
   visits    Int     @default(0)
   isDeleted Boolean @default(false)
 
-  admin   User   @relation(fields: [adminId], references: [id])
-  adminId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String
 
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId String
@@ -107,8 +109,8 @@ model Course {
   credits     Int
   isDeleted   Boolean @default(false)
 
-  admin   User   @relation(fields: [adminId], references: [id])
-  adminId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String
 
   schoolProgramCourses SchoolProgramCourse[]
 }

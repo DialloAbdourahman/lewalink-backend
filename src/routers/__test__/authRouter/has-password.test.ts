@@ -5,9 +5,10 @@ import {
   loginUser,
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not get the has password info if the user is not activated", async () => {
-  const { accessToken } = await loginUser(false, false);
+  const { accessToken } = await loginUser(UserType.Client, false);
 
   const response = await request(app)
     .get("/api/auth/v1/has-password")
@@ -18,7 +19,7 @@ it("Should not get the has password info if the user is not activated", async ()
 });
 
 it("Should not get the has password information of a user whose account has been deleted", async () => {
-  const { accessToken } = await loginUser(false, true, true);
+  const { accessToken } = await loginUser(UserType.Editor, true, true);
 
   const response = await request(app)
     .get("/api/auth/v1/has-password")
@@ -49,7 +50,7 @@ it("Should not get the has password info of an unauthenticated user", async () =
 it("Should get the has password info of an authenticated user", async () => {
   const { accessToken: accessTokenOfUserWithPassword } = await loginUser();
   const { accessToken: accessTokenOfUserWithoutPassword } = await loginUser(
-    false,
+    UserType.Admin,
     true,
     false,
     true

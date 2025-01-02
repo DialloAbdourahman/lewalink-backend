@@ -13,7 +13,7 @@ const createCourse = async (req: Request, res: Response) => {
       title,
       description,
       credits,
-      adminId: req.currentUser?.id as string,
+      creatorId: req.currentUser?.id as string,
     },
     select: {
       id: true,
@@ -22,7 +22,7 @@ const createCourse = async (req: Request, res: Response) => {
       description: true,
       credits: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -72,7 +72,7 @@ const updateCourse = async (req: Request, res: Response) => {
       description: true,
       credits: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -118,7 +118,7 @@ const deleteCourse = async (req: Request, res: Response) => {
       description: true,
       credits: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -164,7 +164,7 @@ const restoreCourse = async (req: Request, res: Response) => {
       description: true,
       credits: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -219,7 +219,7 @@ const getCourses = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, courses, count, itemsPerPage, page);
 };
 
-const adminGetCourses = async (req: Request, res: Response) => {
+const superUserGetCourses = async (req: Request, res: Response) => {
   const {
     name: title,
     itemsPerPage,
@@ -246,7 +246,7 @@ const adminGetCourses = async (req: Request, res: Response) => {
       description: true,
       credits: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -298,7 +298,7 @@ const getCourse = async (req: Request, res: Response) => {
   OrchestrationResult.item(res, course, 200);
 };
 
-const adminGetCourse = async (req: Request, res: Response) => {
+const superUserGetCourse = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   if (!id) {
@@ -319,7 +319,7 @@ const adminGetCourse = async (req: Request, res: Response) => {
       description: true,
       credits: true,
       isDeleted: true,
-      admin: {
+      creator: {
         select: {
           id: true,
           name: true,
@@ -343,7 +343,7 @@ export default {
   deleteCourse,
   restoreCourse,
   getCourses,
-  adminGetCourses,
+  superUserGetCourses,
   getCourse,
-  adminGetCourse,
+  superUserGetCourse,
 };

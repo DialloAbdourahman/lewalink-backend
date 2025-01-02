@@ -910,6 +910,107 @@
                   type: string
                   example: "Something went wrong"
 
+/api/auth/v1/create-editor:
+  post:
+    summary: Create editor
+    tags:
+      - Authentication module
+    parameters:
+      - name: Authorization
+        in: header
+        required: true
+        description: Bearer token (e.g., `Bearer {access_token}`)
+        schema:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The user's fullname
+                example: "John Doe"
+              email:
+                type: string
+                description: The user's email
+                example: "john@doe.com"
+              password:
+                type: string
+                description: The password of the user.
+                example: "securepassword"
+    responses:
+      200:
+        description: Email sent successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+      400:
+        description: Various error scenarios, check yaml files.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                message:
+                  type: string
+        x-errors:
+          - code: "VALIDATION_REQUEST_ERROR"
+            message: "Name must be valid, Password must be between 5 and 20 characters"
+          - code: "EMAIL_IN_USE"
+            message: "Email already in use"
+          - code: "MAX_ADMINS"
+            message: "Maximum number of admins in the system is 3"
+      401:
+        description: Various error scenarios, check yaml files.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                message:
+                  type: string
+        x-errors:
+          - code: "NO_ACCESS_TOKEN"
+            message: "No access token"
+          - code: "ACCESS_TOKEN_EXPIRED"
+            message: "Access token expired"
+          - code: "CANNOT_DECODE_TOKEN"
+            message: "Cannot decode refresh token"
+          - code: "NOT_ALLOWED"
+            message: "You are not allowed to perform this action."
+          - code: "ACCOUNT_DELETED"
+            message: "Account has been deleted, contact support team."
+          - code: "ACCOUNT_NOT_ACTIVATED"
+            message: "Account exists but has not been activated, check your email."
+          - code: "NOT_FOUND"
+            message: "User not found"
+      500:
+        description: Unexpected server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "UNEXPECTED_ERROR"
+                message:
+                  type: string
+                  example: "Something went wrong"
+
 /api/auth/v1/update:
   patch:
     summary: Update account

@@ -6,6 +6,7 @@ import {
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
+import { UserType } from "../../../enums/user-types";
 
 it("Should not update password with wrong information", async () => {
   const { accessToken } = await loginUser();
@@ -87,7 +88,10 @@ it("Should not update password if the two new passwords don't match", async () =
 });
 
 it("Should not update the password of a user whose account has not been activated", async () => {
-  const { accessToken, planTextPassword } = await loginUser(false, false);
+  const { accessToken, planTextPassword } = await loginUser(
+    UserType.Client,
+    false
+  );
 
   const response = await request(app)
     .patch("/api/auth/v1/update-password")
@@ -102,7 +106,11 @@ it("Should not update the password of a user whose account has not been activate
 });
 
 it("Should not update the password of a user whose account has been deleted", async () => {
-  const { accessToken, planTextPassword } = await loginUser(false, true, true);
+  const { accessToken, planTextPassword } = await loginUser(
+    UserType.Client,
+    true,
+    true
+  );
 
   const response = await request(app)
     .patch("/api/auth/v1/update-password")
@@ -145,7 +153,7 @@ it("Should not update password of an unauthenticated user", async () => {
 
 it("Should not allow a passwordless user to use this route", async () => {
   const { accessToken, planTextPassword } = await loginUser(
-    false,
+    UserType.Client,
     true,
     false,
     true
