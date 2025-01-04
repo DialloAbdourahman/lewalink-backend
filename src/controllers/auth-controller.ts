@@ -531,9 +531,6 @@ const seeUsers = async (req: Request, res: Response) => {
       },
       type: userType,
     },
-    orderBy: {
-      name: "asc",
-    },
     skip: skip,
     take: itemsPerPage,
     select: {

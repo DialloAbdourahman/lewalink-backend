@@ -130,6 +130,7 @@ const start = async () => {
 
 start();
 
+// Normal user searches for schools with longitude and latitudes.
 // Work on a school router, don't forget to manage images and finally test it using postman.
 
 // Create a swagger for all these new routes if the frontend guys are ready or just keep going do it next time.

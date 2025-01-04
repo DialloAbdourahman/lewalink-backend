@@ -23,6 +23,12 @@ enum ProgramType {
   LICENCE
 }
 
+enum ProgramField {
+  SCIENCE
+  TECHNOLOGY
+  HEALTH
+}
+
 model User {
   id        String   @id @default(uuid())
   name      String?
@@ -69,12 +75,13 @@ model School {
 }
 
 model Program {
-  id          String      @id @default(uuid())
+  id          String       @id @default(uuid())
   name        String
   description String
   type        ProgramType
+  field       ProgramField
   duration    Float
-  isDeleted   Boolean     @default(false)
+  isDeleted   Boolean      @default(false)
 
   creator   User   @relation(fields: [creatorId], references: [id])
   creatorId String

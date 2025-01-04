@@ -193,9 +193,6 @@ const getCourses = async (req: Request, res: Response) => {
       },
       isDeleted: false,
     },
-    orderBy: {
-      title: "asc",
-    },
     skip: skip,
     take: itemsPerPage,
     select: {
@@ -233,9 +230,6 @@ const superUserGetCourses = async (req: Request, res: Response) => {
         contains: title,
         mode: "insensitive",
       },
-    },
-    orderBy: {
-      title: "asc",
     },
     skip: skip,
     take: itemsPerPage,

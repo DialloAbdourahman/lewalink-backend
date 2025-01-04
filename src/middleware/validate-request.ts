@@ -117,6 +117,7 @@ export const validateCreateProgram: ValidatorMiddleware[] = [
     .isLength({ min: 4, max: 50 })
     .withMessage("Name must be between 4 and 50 characters"),
   body("description").exists().withMessage("Provide a description"),
+  body("field").exists().withMessage("Provide a field"),
   body("duration").exists().isFloat().withMessage("Provide a duration"),
   validateRequest,
 ];

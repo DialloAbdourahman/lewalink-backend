@@ -3,9 +3,20 @@ import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
+import { isEnumValue } from "../utils/is-enum-value";
+import { ProgramField, ProgramType } from "@prisma/client";
 
 const createProgram = async (req: Request, res: Response) => {
-  let { type, name, description, duration } = req.body;
+  let { type, name, description, duration, field } = req.body;
+
+  if (!isEnumValue(ProgramType, type) || !isEnumValue(ProgramField, field)) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Enter a correct field and type"
+    );
+    return;
+  }
 
   const program = await prisma.program.create({
     data: {
@@ -13,6 +24,7 @@ const createProgram = async (req: Request, res: Response) => {
       type,
       description,
       duration,
+      field,
       creatorId: req.currentUser?.id as string,
     },
     select: {
@@ -20,6 +32,7 @@ const createProgram = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
       isDeleted: true,
       creator: {
@@ -37,13 +50,22 @@ const createProgram = async (req: Request, res: Response) => {
 
 const updateProgram = async (req: Request, res: Response) => {
   const { id } = req.params;
-  let { type, name, description, duration } = req.body;
+  let { type, name, description, duration, field } = req.body;
 
   if (!id) {
     OrchestrationResult.badRequest(
       res,
       CODES.VALIDATION_REQUEST_ERROR,
       "Provide an ID"
+    );
+    return;
+  }
+
+  if (!isEnumValue(ProgramType, type) || !isEnumValue(ProgramField, field)) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Enter a correct field and type"
     );
     return;
   }
@@ -70,6 +92,7 @@ const updateProgram = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
       isDeleted: true,
       creator: {
@@ -116,6 +139,7 @@ const deleteProgram = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
       isDeleted: true,
       creator: {
@@ -162,6 +186,7 @@ const restoreProgram = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
       isDeleted: true,
       creator: {
@@ -180,6 +205,24 @@ const restoreProgram = async (req: Request, res: Response) => {
 const getPrograms = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
+  const type = req.query.type ? String(req.query.type) : "";
+  const field = req.query.field ? String(req.query.field) : "";
+
+  const moreFilters: { [key: string]: any } = {};
+
+  if (type && isEnumValue(ProgramType, type)) {
+    moreFilters.type = {
+      equals: type,
+    };
+  }
+
+  if (field && isEnumValue(ProgramField, field)) {
+    moreFilters.field = {
+      equals: field,
+    };
+  }
+
+  console.log("more filters", moreFilters);
 
   const programs = await prisma.program.findMany({
     where: {
@@ -188,9 +231,7 @@ const getPrograms = async (req: Request, res: Response) => {
         mode: "insensitive",
       },
       isDeleted: false,
-    },
-    orderBy: {
-      name: "asc",
+      ...moreFilters,
     },
     skip: skip,
     take: itemsPerPage,
@@ -199,6 +240,7 @@ const getPrograms = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
     },
   });
@@ -219,15 +261,30 @@ const superUserGetPrograms = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
+  const type = req.query.type ? String(req.query.type) : "";
+  const field = req.query.field ? String(req.query.field) : "";
+
+  const moreFilters: { [key: string]: any } = {};
+
+  if (type && isEnumValue(ProgramType, type)) {
+    moreFilters.type = {
+      equals: type,
+    };
+  }
+
+  if (field && isEnumValue(ProgramField, field)) {
+    moreFilters.field = {
+      equals: field,
+    };
+  }
+
   const programs = await prisma.program.findMany({
     where: {
       name: {
         contains: name,
         mode: "insensitive",
       },
-    },
-    orderBy: {
-      name: "asc",
+      ...moreFilters,
     },
     skip: skip,
     take: itemsPerPage,
@@ -236,6 +293,7 @@ const superUserGetPrograms = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
       isDeleted: true,
       creator: {
@@ -278,6 +336,7 @@ const getProgram = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
     },
   });
@@ -309,6 +368,7 @@ const superUserGetProgram = async (req: Request, res: Response) => {
       name: true,
       description: true,
       type: true,
+      field: true,
       duration: true,
       isDeleted: true,
       creator: {

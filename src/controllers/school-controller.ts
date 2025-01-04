@@ -42,6 +42,15 @@ const createSchool = async (req: Request, res: Response) => {
     return;
   }
 
+  if (!isEnumValue(SchoolType, type)) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Please provide a correct school type"
+    );
+    return;
+  }
+
   const existingSchool = await prisma.school.findFirst({
     where: {
       name,
@@ -104,7 +113,6 @@ const createSchool = async (req: Request, res: Response) => {
         email: true,
         phoneNumber: true,
         website: true,
-        pictures: true,
         visits: true,
         isDeleted: true,
         creator: {
@@ -131,18 +139,7 @@ const createSchool = async (req: Request, res: Response) => {
     return;
   }
 
-  const schoolImages = await Promise.all(
-    schoolWithImages.pictures.map(async (picture) => {
-      const url = await awsHelper.getImageUrl(picture);
-      return { url, key: picture };
-    })
-  );
-
-  OrchestrationResult.item(
-    res,
-    { ...schoolWithImages, imagesUrls: schoolImages },
-    201
-  );
+  OrchestrationResult.item(res, schoolWithImages, 201);
 };
 
 const addImages = async (req: Request, res: Response) => {
@@ -345,6 +342,15 @@ const updateSchool = async (req: Request, res: Response) => {
     website,
   } = req.body;
 
+  if (!isEnumValue(SchoolType, type)) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Please provide a correct school type"
+    );
+    return;
+  }
+
   const school = await prisma.school.findUnique({
     where: {
       id,
@@ -384,7 +390,6 @@ const updateSchool = async (req: Request, res: Response) => {
       email: true,
       phoneNumber: true,
       website: true,
-      pictures: true,
       visits: true,
       isDeleted: true,
       creator: {
@@ -397,20 +402,7 @@ const updateSchool = async (req: Request, res: Response) => {
     },
   });
 
-  const awsHelper = new AwsS3Helper();
-
-  const schoolImages = await Promise.all(
-    updatedSchool.pictures.map(async (picture) => {
-      const url = await awsHelper.getImageUrl(picture);
-      return { url, key: picture };
-    })
-  );
-
-  OrchestrationResult.item(
-    res,
-    { ...updatedSchool, imagesUrls: schoolImages },
-    200
-  );
+  OrchestrationResult.item(res, updatedSchool, 200);
 };
 
 const deleteSchool = async (req: Request, res: Response) => {
@@ -446,7 +438,6 @@ const deleteSchool = async (req: Request, res: Response) => {
       email: true,
       phoneNumber: true,
       website: true,
-      pictures: true,
       visits: true,
       isDeleted: true,
       creator: {
@@ -459,20 +450,7 @@ const deleteSchool = async (req: Request, res: Response) => {
     },
   });
 
-  const awsHelper = new AwsS3Helper();
-
-  const schoolImages = await Promise.all(
-    deletedSchool.pictures.map(async (picture) => {
-      const url = await awsHelper.getImageUrl(picture);
-      return { url, key: picture };
-    })
-  );
-
-  OrchestrationResult.item(
-    res,
-    { ...deletedSchool, imagesUrls: schoolImages },
-    200
-  );
+  OrchestrationResult.item(res, deletedSchool, 200);
 };
 
 const restoreSchool = async (req: Request, res: Response) => {
@@ -489,7 +467,7 @@ const restoreSchool = async (req: Request, res: Response) => {
     return;
   }
 
-  const deletedSchool = await prisma.school.update({
+  const restoredSchool = await prisma.school.update({
     where: {
       id: school.id,
     },
@@ -508,7 +486,6 @@ const restoreSchool = async (req: Request, res: Response) => {
       email: true,
       phoneNumber: true,
       website: true,
-      pictures: true,
       visits: true,
       isDeleted: true,
       creator: {
@@ -521,20 +498,7 @@ const restoreSchool = async (req: Request, res: Response) => {
     },
   });
 
-  const awsHelper = new AwsS3Helper();
-
-  const schoolImages = await Promise.all(
-    deletedSchool.pictures.map(async (picture) => {
-      const url = await awsHelper.getImageUrl(picture);
-      return { url, key: picture };
-    })
-  );
-
-  OrchestrationResult.item(
-    res,
-    { ...deletedSchool, imagesUrls: schoolImages },
-    200
-  );
+  OrchestrationResult.item(res, restoredSchool, 200);
 };
 
 const visitSchool = async (req: Request, res: Response) => {
@@ -685,16 +649,10 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
   const country = req.query.country ? String(req.query.country) : "";
   const type = req.query.type ? String(req.query.type) : "";
 
-  const orderByName =
-    req.query.orderByName === "asc" || req.query.orderByName === "desc"
-      ? (String(req.query.orderByName) as "asc" | "desc")
-      : "asc";
   const orderByVisits =
     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
       ? (String(req.query.orderByVisits) as "asc" | "desc")
       : "desc";
-
-  console.log(orderByName, orderByVisits);
 
   const moreFilters: { [key: string]: any } = {};
 
@@ -720,7 +678,7 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
       },
       ...moreFilters,
     },
-    orderBy: [{ visits: orderByVisits }, { name: orderByName }],
+    orderBy: { visits: orderByVisits },
     skip: skip,
     take: itemsPerPage,
     select: {
@@ -735,7 +693,6 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
       email: true,
       phoneNumber: true,
       website: true,
-      pictures: true,
       visits: true,
       isDeleted: true,
       creator: {
@@ -758,8 +715,6 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
 
   OrchestrationResult.list(res, schools, count, itemsPerPage, page);
 };
-
-// Normal user searches for schools
 
 export default {
   createSchool,
