@@ -251,6 +251,7 @@ const getPrograms = async (req: Request, res: Response) => {
         mode: "insensitive",
       },
       isDeleted: false,
+      ...moreFilters,
     },
   });
 
@@ -311,6 +312,7 @@ const superUserGetPrograms = async (req: Request, res: Response) => {
         contains: name,
         mode: "insensitive",
       },
+      ...moreFilters,
     },
   });
 

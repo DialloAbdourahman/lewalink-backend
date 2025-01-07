@@ -7,6 +7,10 @@ import { AwsS3Helper } from "../utils/aws-s3-helper";
 import { generateRandomString } from "../utils/generateRandomString";
 import { SchoolType } from "../enums/school-types";
 import { isEnumValue } from "../utils/is-enum-value";
+import { haversineDistance } from "../utils/haversine";
+import { isNumeric } from "../utils/isDigitsOnly";
+import { Prisma, School } from "@prisma/client";
+import { Sql } from "@prisma/client/runtime/library";
 
 const createSchool = async (req: Request, res: Response) => {
   const images = req.files as Express.Multer.File[];
@@ -641,6 +645,97 @@ const seeSchool = async (req: Request, res: Response) => {
   OrchestrationResult.item(res, { ...school, imagesUrls: schoolImages }, 200);
 };
 
+const seeSchoolWithGeolocalization = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const longitude = req.query.longitude as string;
+  const latitude = req.query.latitude as string;
+
+  if (
+    !longitude ||
+    !latitude ||
+    longitude === "undefined" ||
+    latitude === "undefined" ||
+    !isNumeric(latitude) ||
+    !isNumeric(longitude)
+  ) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Please enter longitude and latitude"
+    );
+    return;
+  }
+
+  if (
+    Number(latitude) < -90 ||
+    Number(latitude) > 90 ||
+    Number(longitude) < -180 ||
+    Number(longitude) > 180
+  ) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide a correct longitude and latitude"
+    );
+    return;
+  }
+
+  const prismaWithGeolocation = prisma.$extends({
+    result: {
+      school: {
+        distance: {
+          needs: { latitude: true, longitude: true },
+          compute(school) {
+            return haversineDistance(
+              { latitude: Number(latitude), longitude: Number(longitude) },
+              { latitude: school.latitude, longitude: school.longitude }
+            );
+          },
+        },
+      },
+    },
+  });
+
+  const school = await prismaWithGeolocation.school.findUnique({
+    where: {
+      id,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      type: true,
+      longitude: true,
+      latitude: true,
+      country: true,
+      city: true,
+      email: true,
+      phoneNumber: true,
+      website: true,
+      pictures: true,
+      visits: true,
+      distance: true,
+    },
+  });
+
+  if (!school) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "School does not exist");
+    return;
+  }
+
+  const awsHelper = new AwsS3Helper();
+
+  const schoolImages = await Promise.all(
+    school.pictures.map(async (picture) => {
+      const url = await awsHelper.getImageUrl(picture);
+      return { url, key: picture };
+    })
+  );
+
+  OrchestrationResult.item(res, { ...school, imagesUrls: schoolImages }, 200);
+};
+
 const superUserSeeSchools = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
@@ -710,6 +805,218 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
         contains: name,
         mode: "insensitive",
       },
+      country: {
+        contains: country,
+        mode: "insensitive",
+      },
+      city: {
+        contains: city,
+        mode: "insensitive",
+      },
+      ...moreFilters,
+    },
+  });
+
+  OrchestrationResult.list(res, schools, count, itemsPerPage, page);
+};
+
+const seeSchools = async (req: Request, res: Response) => {
+  const { name, itemsPerPage, page, skip } =
+    getNameAndPageAndItemsPerPageFromRequestQuery(req);
+
+  const city = req.query.city ? String(req.query.city) : "";
+  const country = req.query.country ? String(req.query.country) : "";
+  const type = req.query.type ? String(req.query.type) : "";
+
+  const orderByVisits =
+    req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
+      ? (String(req.query.orderByVisits) as "asc" | "desc")
+      : "desc";
+
+  const moreFilters: { [key: string]: any } = {};
+
+  if (type && isEnumValue(SchoolType, type)) {
+    moreFilters.type = {
+      equals: type,
+    };
+  }
+
+  const schools = await prisma.school.findMany({
+    where: {
+      name: {
+        contains: name,
+        mode: "insensitive",
+      },
+      country: {
+        contains: country,
+        mode: "insensitive",
+      },
+      city: {
+        contains: city,
+        mode: "insensitive",
+      },
+      ...moreFilters,
+    },
+    orderBy: { visits: orderByVisits },
+    skip: skip,
+    take: itemsPerPage,
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      type: true,
+      longitude: true,
+      latitude: true,
+      country: true,
+      city: true,
+      email: true,
+      phoneNumber: true,
+      website: true,
+      visits: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+  const count = await prisma.school.count({
+    where: {
+      name: {
+        contains: name,
+        mode: "insensitive",
+      },
+      country: {
+        contains: country,
+        mode: "insensitive",
+      },
+      city: {
+        contains: city,
+        mode: "insensitive",
+      },
+      ...moreFilters,
+    },
+  });
+
+  OrchestrationResult.list(res, schools, count, itemsPerPage, page);
+};
+
+const seeSchoolsWithGeolocalization = async (req: Request, res: Response) => {
+  const { name, itemsPerPage, page, skip } =
+    getNameAndPageAndItemsPerPageFromRequestQuery(req);
+
+  const city = req.query.city ? String(req.query.city) : "";
+  const country = req.query.country ? String(req.query.country) : "";
+  let type = req.query.type ? String(req.query.type) : "";
+
+  const longitude = req.query.longitude as string;
+  const latitude = req.query.latitude as string;
+
+  const orderByVisits =
+    req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
+      ? (String(req.query.orderByVisits) as "asc" | "desc")
+      : "desc";
+
+  const orderByDistance =
+    req.query.orderByDistance === "asc" || req.query.orderByDistance === "desc"
+      ? (String(req.query.orderByDistance) as "asc" | "desc")
+      : "asc";
+
+  const moreFilters: { [key: string]: any } = {};
+
+  let typeOnRawSQL = "";
+  if (type && isEnumValue(SchoolType, type)) {
+    moreFilters.type = {
+      equals: type,
+    };
+    typeOnRawSQL = type;
+  }
+
+  if (
+    !longitude ||
+    !latitude ||
+    longitude === "undefined" ||
+    latitude === "undefined" ||
+    !isNumeric(latitude) ||
+    !isNumeric(longitude)
+  ) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Please enter longitude and latitude"
+    );
+    return;
+  }
+
+  if (
+    Number(latitude) < -90 ||
+    Number(latitude) > 90 ||
+    Number(longitude) < -180 ||
+    Number(longitude) > 180
+  ) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide a correct longitude and latitude"
+    );
+    return;
+  }
+
+  const query = `
+      SELECT
+        id,
+        name,
+        description,
+        type,
+        longitude,
+        latitude,
+        country,
+        city,
+        email,
+        'phone-number' AS phoneNumber,
+        website,
+        visits,
+        (6371 * acos(cos(radians(${Number(
+          latitude
+        )})) * cos(radians(s.latitude)) *
+          cos(radians(s.longitude) - radians(${Number(longitude)})) +
+          sin(radians(${Number(
+            latitude
+          )})) * sin(radians(s.latitude)))) AS distance
+      FROM "School" AS s
+      WHERE
+        s.name ILIKE '%${name}%' AND
+        s.country ILIKE '%${country}%' AND
+        s.city ILIKE '%${city}%'
+        ${typeOnRawSQL ? `AND s.type = '${typeOnRawSQL}'` : ""}      
+      ORDER BY
+        distance ${orderByDistance},
+        visits ${orderByVisits}
+      LIMIT ${itemsPerPage} OFFSET ${skip}
+  `;
+
+  console.log(query);
+
+  const schools = await prisma.$queryRawUnsafe<School[]>(query);
+
+  const count = await prisma.school.count({
+    where: {
+      name: {
+        contains: name,
+        mode: "insensitive",
+      },
+      country: {
+        contains: country,
+        mode: "insensitive",
+      },
+      city: {
+        contains: city,
+        mode: "insensitive",
+      },
+      ...moreFilters,
     },
   });
 
@@ -727,4 +1034,7 @@ export default {
   superUserSeeSchool,
   seeSchool,
   superUserSeeSchools,
+  seeSchools,
+  seeSchoolWithGeolocalization,
+  seeSchoolsWithGeolocalization,
 };

@@ -15,6 +15,7 @@ enum UserType {
 
 enum SchoolType {
   PublicStateUniversity
+  PrivateUniversity
 }
 
 enum ProgramType {

@@ -42,7 +42,12 @@ router.patch(
 
 router.get("/visit/:id", schoolController.visitSchool);
 
-router.get("/super-user-see-schools", schoolController.superUserSeeSchools);
+router.get(
+  "/super-user-see-schools",
+  requireAuth,
+  verifyRoles([UserType.Admin, UserType.Editor]),
+  schoolController.superUserSeeSchools
+);
 
 router.get(
   "/super-user-see-school/:id",
@@ -51,7 +56,19 @@ router.get(
   schoolController.superUserSeeSchool
 );
 
+router.get(
+  "/geolocalization/:id",
+  schoolController.seeSchoolWithGeolocalization
+);
+
+router.get(
+  "/see-schools-with-geolocalization",
+  schoolController.seeSchoolsWithGeolocalization
+);
+
 router.get("/:id", schoolController.seeSchool);
+
+router.get("/", schoolController.seeSchools);
 
 router.delete(
   "/delete-image",
