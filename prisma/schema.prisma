@@ -47,9 +47,8 @@ model User {
   programsCreated       Program[]
   schoolProgramsCreated SchoolProgram[]
   schoolRatings         SchoolRating[]
-  schoolProgramRating   SchoolProgramRating[]
   coursesCreated        Course[]
-  usersCreated          User[]                @relation("UserAdmin")
+  usersCreated          User[]          @relation("UserAdmin")
 }
 
 model School {
@@ -61,6 +60,7 @@ model School {
   country     String
   city        String
   visits      Int        @default(0)
+  rating      Float      @default(0)
   email       String?
   phoneNumber String?
   website     String?
@@ -105,7 +105,6 @@ model SchoolProgram {
   program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
   programId String
 
-  schoolProgramRatings SchoolProgramRating[]
   schoolProgramCourses SchoolProgramCourse[]
 }
 
@@ -144,17 +143,4 @@ model SchoolRating {
 
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId String
-}
-
-model SchoolProgramRating {
-  id        String  @id @default(uuid())
-  stars     Int
-  message   String
-  isDeleted Boolean @default(false)
-
-  client   User   @relation(fields: [clientId], references: [id])
-  clientId String
-
-  schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id], onDelete: Cascade)
-  schoolProgramId String
 }

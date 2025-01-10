@@ -61,14 +61,11 @@ router.get(
   schoolController.seeSchoolWithGeolocalization
 );
 
-router.get(
-  "/see-schools-with-geolocalization",
-  schoolController.seeSchoolsWithGeolocalization
-);
+router.get("/search", schoolController.searchSchools);
 
 router.get("/:id", schoolController.seeSchool);
 
-router.get("/", schoolController.seeSchools);
+router.get("/", schoolController.searchSchools);
 
 router.delete(
   "/delete-image",

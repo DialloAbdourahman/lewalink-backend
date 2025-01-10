@@ -11,6 +11,16 @@ declare global {
   }
 }
 
+declare global {
+  interface BigInt {
+    toJSON(): Number;
+  }
+}
+
+BigInt.prototype.toJSON = function () {
+  return Number(this);
+};
+
 const PORT = 3000;
 
 const start = async () => {

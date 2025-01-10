@@ -11,6 +11,7 @@ import { haversineDistance } from "../utils/haversine";
 import { isNumeric } from "../utils/isDigitsOnly";
 import { Prisma, School } from "@prisma/client";
 import { Sql } from "@prisma/client/runtime/library";
+import { sanitizeInput } from "../utils/sanitize-input";
 
 const createSchool = async (req: Request, res: Response) => {
   const images = req.files as Express.Multer.File[];
@@ -576,6 +577,7 @@ const superUserSeeSchool = async (req: Request, res: Response) => {
       pictures: true,
       visits: true,
       isDeleted: true,
+      rating: true,
       creator: {
         select: {
           id: true,
@@ -625,6 +627,7 @@ const seeSchool = async (req: Request, res: Response) => {
       website: true,
       pictures: true,
       visits: true,
+      rating: true,
     },
   });
 
@@ -647,23 +650,36 @@ const seeSchool = async (req: Request, res: Response) => {
 
 const seeSchoolWithGeolocalization = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const longitude = req.query.longitude as string;
-  const latitude = req.query.latitude as string;
+  const longitude = req.query.longitude
+    ? String(sanitizeInput(req.query.longitude as string))
+    : "";
+  const latitude = req.query.latitude
+    ? String(sanitizeInput(req.query.latitude as string))
+    : "";
 
-  if (
-    !longitude ||
-    !latitude ||
-    longitude === "undefined" ||
-    latitude === "undefined" ||
-    !isNumeric(latitude) ||
-    !isNumeric(longitude)
-  ) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Please enter longitude and latitude"
-    );
-    return;
+  if (longitude || latitude) {
+    if (!isNumeric(latitude) || !isNumeric(longitude)) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.VALIDATION_REQUEST_ERROR,
+        "Provide a correct longitude and latitude"
+      );
+      return;
+    }
+
+    if (
+      Number(latitude) < -90 ||
+      Number(latitude) > 90 ||
+      Number(longitude) < -180 ||
+      Number(longitude) > 180
+    ) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.VALIDATION_REQUEST_ERROR,
+        "Provide a correct longitude and latitude"
+      );
+      return;
+    }
   }
 
   if (
@@ -716,6 +732,7 @@ const seeSchoolWithGeolocalization = async (req: Request, res: Response) => {
       pictures: true,
       visits: true,
       distance: true,
+      rating: true,
     },
   });
 
@@ -748,89 +765,9 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
       ? (String(req.query.orderByVisits) as "asc" | "desc")
       : "desc";
-
-  const moreFilters: { [key: string]: any } = {};
-
-  if (type && isEnumValue(SchoolType, type)) {
-    moreFilters.type = {
-      equals: type,
-    };
-  }
-
-  const schools = await prisma.school.findMany({
-    where: {
-      name: {
-        contains: name,
-        mode: "insensitive",
-      },
-      country: {
-        contains: country,
-        mode: "insensitive",
-      },
-      city: {
-        contains: city,
-        mode: "insensitive",
-      },
-      ...moreFilters,
-    },
-    orderBy: { visits: orderByVisits },
-    skip: skip,
-    take: itemsPerPage,
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      type: true,
-      longitude: true,
-      latitude: true,
-      country: true,
-      city: true,
-      email: true,
-      phoneNumber: true,
-      website: true,
-      visits: true,
-      isDeleted: true,
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
-  });
-  const count = await prisma.school.count({
-    where: {
-      name: {
-        contains: name,
-        mode: "insensitive",
-      },
-      country: {
-        contains: country,
-        mode: "insensitive",
-      },
-      city: {
-        contains: city,
-        mode: "insensitive",
-      },
-      ...moreFilters,
-    },
-  });
-
-  OrchestrationResult.list(res, schools, count, itemsPerPage, page);
-};
-
-const seeSchools = async (req: Request, res: Response) => {
-  const { name, itemsPerPage, page, skip } =
-    getNameAndPageAndItemsPerPageFromRequestQuery(req);
-
-  const city = req.query.city ? String(req.query.city) : "";
-  const country = req.query.country ? String(req.query.country) : "";
-  const type = req.query.type ? String(req.query.type) : "";
-
-  const orderByVisits =
-    req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
-      ? (String(req.query.orderByVisits) as "asc" | "desc")
+  const orderByRating =
+    req.query.orderByRating === "asc" || req.query.orderByRating === "desc"
+      ? (String(req.query.orderByRating) as "asc" | "desc")
       : "desc";
 
   const moreFilters: { [key: string]: any } = {};
@@ -857,7 +794,10 @@ const seeSchools = async (req: Request, res: Response) => {
       },
       ...moreFilters,
     },
-    orderBy: { visits: orderByVisits },
+    orderBy: [
+      { rating: orderByRating as "asc" | "desc" }, // Sort by rating, default to descending
+      { visits: orderByVisits as "asc" | "desc" },
+    ],
     skip: skip,
     take: itemsPerPage,
     select: {
@@ -873,6 +813,7 @@ const seeSchools = async (req: Request, res: Response) => {
       phoneNumber: true,
       website: true,
       visits: true,
+      rating: true,
       isDeleted: true,
       creator: {
         select: {
@@ -904,20 +845,35 @@ const seeSchools = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, schools, count, itemsPerPage, page);
 };
 
-const seeSchoolsWithGeolocalization = async (req: Request, res: Response) => {
+const searchSchools = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
-  const city = req.query.city ? String(req.query.city) : "";
-  const country = req.query.country ? String(req.query.country) : "";
-  let type = req.query.type ? String(req.query.type) : "";
+  const city = req.query.city
+    ? String(sanitizeInput(req.query.city as string))
+    : "";
+  const country = req.query.country
+    ? String(sanitizeInput(req.query.country as string))
+    : "";
+  let type = req.query.type
+    ? String(sanitizeInput(req.query.type as string))
+    : "";
 
-  const longitude = req.query.longitude as string;
-  const latitude = req.query.latitude as string;
+  const longitude = req.query.longitude
+    ? String(sanitizeInput(req.query.longitude as string))
+    : "";
+  const latitude = req.query.latitude
+    ? String(sanitizeInput(req.query.latitude as string))
+    : "";
 
   const orderByVisits =
     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
       ? (String(req.query.orderByVisits) as "asc" | "desc")
+      : "desc";
+
+  const orderByRating =
+    req.query.orderByRating === "asc" || req.query.orderByRating === "desc"
+      ? (String(req.query.orderByRating) as "asc" | "desc")
       : "desc";
 
   const orderByDistance =
@@ -925,100 +881,110 @@ const seeSchoolsWithGeolocalization = async (req: Request, res: Response) => {
       ? (String(req.query.orderByDistance) as "asc" | "desc")
       : "asc";
 
-  const moreFilters: { [key: string]: any } = {};
-
-  let typeOnRawSQL = "";
-  if (type && isEnumValue(SchoolType, type)) {
-    moreFilters.type = {
-      equals: type,
-    };
-    typeOnRawSQL = type;
-  }
-
-  if (
-    !longitude ||
-    !latitude ||
-    longitude === "undefined" ||
-    latitude === "undefined" ||
-    !isNumeric(latitude) ||
-    !isNumeric(longitude)
-  ) {
+  if (type && !isEnumValue(SchoolType, type)) {
     OrchestrationResult.badRequest(
       res,
       CODES.VALIDATION_REQUEST_ERROR,
-      "Please enter longitude and latitude"
+      "Provide a correct type"
     );
     return;
   }
 
-  if (
-    Number(latitude) < -90 ||
-    Number(latitude) > 90 ||
-    Number(longitude) < -180 ||
-    Number(longitude) > 180
-  ) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Provide a correct longitude and latitude"
-    );
-    return;
+  if (longitude || latitude) {
+    if (!isNumeric(latitude) || !isNumeric(longitude)) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.VALIDATION_REQUEST_ERROR,
+        "Provide a correct longitude and latitude"
+      );
+      return;
+    }
+
+    if (
+      Number(latitude) < -90 ||
+      Number(latitude) > 90 ||
+      Number(longitude) < -180 ||
+      Number(longitude) > 180
+    ) {
+      OrchestrationResult.badRequest(
+        res,
+        CODES.VALIDATION_REQUEST_ERROR,
+        "Provide a correct longitude and latitude"
+      );
+      return;
+    }
   }
 
   const query = `
       SELECT
-        id,
-        name,
-        description,
-        type,
-        longitude,
-        latitude,
-        country,
-        city,
-        email,
+        s.id,
+        s.name,
+        s.description,
+        s.type,
+        s.longitude,
+        s.latitude,
+        s.country,
+        s.city,
+        s.email,
         'phone-number' AS phoneNumber,
-        website,
-        visits,
-        (6371 * acos(cos(radians(${Number(
-          latitude
-        )})) * cos(radians(s.latitude)) *
+        s.website,
+        s.visits,
+        s.rating
+        ${
+          longitude &&
+          latitude &&
+          `,(6371 * acos(cos(radians(${Number(
+            latitude
+          )})) * cos(radians(s.latitude)) *
           cos(radians(s.longitude) - radians(${Number(longitude)})) +
           sin(radians(${Number(
             latitude
-          )})) * sin(radians(s.latitude)))) AS distance
+          )})) * sin(radians(s.latitude)))) AS distance`
+        }
       FROM "School" AS s
       WHERE
         s.name ILIKE '%${name}%' AND
         s.country ILIKE '%${country}%' AND
-        s.city ILIKE '%${city}%'
-        ${typeOnRawSQL ? `AND s.type = '${typeOnRawSQL}'` : ""}      
+        s.city ILIKE '%${city}%' AND
+        ${type && `s.type = '${type}' AND`}
+        s."isDeleted" = false
       ORDER BY
-        distance ${orderByDistance},
+        ${longitude && latitude && `distance ${orderByDistance},`}
+        rating ${orderByRating},
         visits ${orderByVisits}
       LIMIT ${itemsPerPage} OFFSET ${skip}
   `;
 
-  console.log(query);
+  const countQuery = `
+      SELECT
+        COUNT(s.id)
+        ${
+          longitude &&
+          latitude &&
+          `,(6371 * acos(cos(radians(${Number(
+            latitude
+          )})) * cos(radians(s.latitude)) *
+          cos(radians(s.longitude) - radians(${Number(longitude)})) +
+          sin(radians(${Number(
+            latitude
+          )})) * sin(radians(s.latitude)))) AS distance`
+        }
+      FROM "School" AS s
+      WHERE
+        s.name ILIKE '%${name}%' AND
+        s.country ILIKE '%${country}%' AND
+        s.city ILIKE '%${city}%' AND
+        ${type && `s.type = '${type}' AND`}
+        s."isDeleted" = false
+      GROUP BY
+        s.latitude, s.longitude
+  `;
 
   const schools = await prisma.$queryRawUnsafe<School[]>(query);
-
-  const count = await prisma.school.count({
-    where: {
-      name: {
-        contains: name,
-        mode: "insensitive",
-      },
-      country: {
-        contains: country,
-        mode: "insensitive",
-      },
-      city: {
-        contains: city,
-        mode: "insensitive",
-      },
-      ...moreFilters,
-    },
-  });
+  const countData = await prisma.$queryRawUnsafe<{ count: number }[]>(
+    countQuery
+  );
+  const count = Number(countData[0].count);
 
   OrchestrationResult.list(res, schools, count, itemsPerPage, page);
 };
@@ -1034,7 +1000,6 @@ export default {
   superUserSeeSchool,
   seeSchool,
   superUserSeeSchools,
-  seeSchools,
+  searchSchools,
   seeSchoolWithGeolocalization,
-  seeSchoolsWithGeolocalization,
 };
