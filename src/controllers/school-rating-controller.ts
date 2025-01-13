@@ -68,7 +68,7 @@ const createSchoolRating = async (req: Request, res: Response) => {
 
   const totalSchoolRating = await prisma.schoolRating.aggregate({
     _avg: {
-      stars,
+      stars: true,
     },
     where: {
       schoolId: schoolRating.schoolId,
@@ -88,356 +88,216 @@ const createSchoolRating = async (req: Request, res: Response) => {
   OrchestrationResult.item(res, schoolRating, 201);
 };
 
-// const updateProgram = async (req: Request, res: Response) => {
-//   const { id } = req.params;
-//   let { type, name, description, duration, field } = req.body;
+const updateSchoolRating = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { schoolId, stars, message } = req.body;
 
-//   if (!id) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Provide an ID"
-//     );
-//     return;
-//   }
+  if (!id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide an ID"
+    );
+    return;
+  }
 
-//   if (!isEnumValue(ProgramType, type) || !isEnumValue(ProgramField, field)) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Enter a correct field and type"
-//     );
-//     return;
-//   }
+  const existingSchoolRating = await prisma.schoolRating.findFirst({
+    where: {
+      id,
+      schoolId,
+      isDeleted: false,
+    },
+  });
 
-//   const program = await prisma.program.findUnique({ where: { id } });
+  if (!existingSchoolRating) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "School does not exist");
+    return;
+  }
 
-//   if (!program) {
-//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Program not found");
-//     return;
-//   }
+  if (existingSchoolRating.clientId !== req.currentUser?.id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.NOT_YOUR_RATING,
+      "You are not allowed to update someone else's rating"
+    );
+    return;
+  }
 
-//   const updatedProgram = await prisma.program.update({
-//     where: {
-//       id,
-//     },
-//     data: {
-//       name,
-//       type,
-//       description,
-//       duration,
-//     },
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//       isDeleted: true,
-//       creator: {
-//         select: {
-//           id: true,
-//           name: true,
-//           email: true,
-//         },
-//       },
-//     },
-//   });
+  if (stars < 1 || stars > 5) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Start should be between 1 and 5 inclusive"
+    );
+    return;
+  }
 
-//   OrchestrationResult.item(res, updatedProgram, 200);
-// };
+  const rating = await prisma.schoolRating.update({
+    where: {
+      id: existingSchoolRating.id,
+    },
+    data: {
+      stars,
+      message,
+    },
+    select: {
+      id: true,
+      stars: true,
+      message: true,
+      client: {
+        select: {
+          name: true,
+        },
+      },
+      schoolId: true,
+    },
+  });
 
-// const deleteProgram = async (req: Request, res: Response) => {
-//   const { id } = req.params;
+  if (existingSchoolRating.stars !== rating.stars) {
+    const totalSchoolRating = await prisma.schoolRating.aggregate({
+      _avg: {
+        stars: true,
+      },
+      where: {
+        schoolId: rating.schoolId,
+        isDeleted: false,
+      },
+    });
 
-//   if (!id) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Provide an ID"
-//     );
-//     return;
-//   }
+    await prisma.school.update({
+      where: {
+        id: rating.schoolId,
+      },
+      data: {
+        rating: totalSchoolRating._avg.stars as number,
+      },
+    });
+  }
 
-//   const program = await prisma.program.findUnique({ where: { id } });
+  OrchestrationResult.item(res, rating, 200);
+};
 
-//   if (!program) {
-//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Program not found");
-//     return;
-//   }
+const deleteSchoolRating = async (req: Request, res: Response) => {
+  const { id } = req.params;
 
-//   const deletedProgram = await prisma.program.update({
-//     where: {
-//       id,
-//     },
-//     data: {
-//       isDeleted: true,
-//     },
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//       isDeleted: true,
-//       creator: {
-//         select: {
-//           id: true,
-//           name: true,
-//           email: true,
-//         },
-//       },
-//     },
-//   });
+  if (!id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide an ID"
+    );
+    return;
+  }
 
-//   OrchestrationResult.item(res, deletedProgram, 200);
-// };
+  const existingSchoolRating = await prisma.schoolRating.findFirst({
+    where: {
+      id,
+    },
+  });
 
-// const restoreProgram = async (req: Request, res: Response) => {
-//   const { id } = req.params;
+  if (!existingSchoolRating) {
+    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "School does not exist");
+    return;
+  }
 
-//   if (!id) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Provide an ID"
-//     );
-//     return;
-//   }
+  if (existingSchoolRating.clientId !== req.currentUser?.id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.NOT_YOUR_RATING,
+      "You are not allowed to update someone else's rating"
+    );
+    return;
+  }
 
-//   const program = await prisma.program.findUnique({ where: { id } });
+  const rating = await prisma.schoolRating.update({
+    where: {
+      id: existingSchoolRating.id,
+    },
+    data: {
+      isDeleted: true,
+    },
+    select: {
+      id: true,
+      stars: true,
+      message: true,
+      client: {
+        select: {
+          name: true,
+        },
+      },
+      schoolId: true,
+    },
+  });
 
-//   if (!program) {
-//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Program not found");
-//     return;
-//   }
+  const totalSchoolRating = await prisma.schoolRating.aggregate({
+    _avg: {
+      stars: true,
+    },
+    where: {
+      schoolId: rating.schoolId,
+      isDeleted: false,
+    },
+  });
 
-//   const restoredProgram = await prisma.program.update({
-//     where: {
-//       id,
-//     },
-//     data: {
-//       isDeleted: false,
-//     },
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//       isDeleted: true,
-//       creator: {
-//         select: {
-//           id: true,
-//           name: true,
-//           email: true,
-//         },
-//       },
-//     },
-//   });
+  await prisma.school.update({
+    where: {
+      id: rating.schoolId,
+    },
+    data: {
+      rating: totalSchoolRating._avg.stars as number,
+    },
+  });
 
-//   OrchestrationResult.item(res, restoredProgram, 200);
-// };
+  OrchestrationResult.success(res);
+};
 
-// const getPrograms = async (req: Request, res: Response) => {
-//   const { name, itemsPerPage, page, skip } =
-//     getNameAndPageAndItemsPerPageFromRequestQuery(req);
-//   const type = req.query.type ? String(req.query.type) : "";
-//   const field = req.query.field ? String(req.query.field) : "";
+const getSchoolRatings = async (req: Request, res: Response) => {
+  const { schoolId } = req.params;
 
-//   const moreFilters: { [key: string]: any } = {};
+  if (!schoolId) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.VALIDATION_REQUEST_ERROR,
+      "Provide a schoolID"
+    );
+    return;
+  }
 
-//   if (type && isEnumValue(ProgramType, type)) {
-//     moreFilters.type = {
-//       equals: type,
-//     };
-//   }
+  const { itemsPerPage, page, skip } =
+    getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
-//   if (field && isEnumValue(ProgramField, field)) {
-//     moreFilters.field = {
-//       equals: field,
-//     };
-//   }
+  const courses = await prisma.schoolRating.findMany({
+    where: {
+      schoolId,
+      isDeleted: false,
+    },
+    skip: skip,
+    take: itemsPerPage,
+    select: {
+      id: true,
+      stars: true,
+      message: true,
+      client: {
+        select: {
+          name: true,
+        },
+      },
+      schoolId: true,
+    },
+  });
+  const count = await prisma.schoolRating.count({
+    where: {
+      schoolId,
+      isDeleted: false,
+    },
+  });
 
-//   console.log("more filters", moreFilters);
-
-//   const programs = await prisma.program.findMany({
-//     where: {
-//       name: {
-//         contains: name,
-//         mode: "insensitive",
-//       },
-//       isDeleted: false,
-//       ...moreFilters,
-//     },
-//     skip: skip,
-//     take: itemsPerPage,
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//     },
-//   });
-//   const count = await prisma.program.count({
-//     where: {
-//       name: {
-//         contains: name,
-//         mode: "insensitive",
-//       },
-//       isDeleted: false,
-//       ...moreFilters,
-//     },
-//   });
-
-//   OrchestrationResult.list(res, programs, count, itemsPerPage, page);
-// };
-
-// const superUserGetPrograms = async (req: Request, res: Response) => {
-//   const { name, itemsPerPage, page, skip } =
-//     getNameAndPageAndItemsPerPageFromRequestQuery(req);
-
-//   const type = req.query.type ? String(req.query.type) : "";
-//   const field = req.query.field ? String(req.query.field) : "";
-
-//   const moreFilters: { [key: string]: any } = {};
-
-//   if (type && isEnumValue(ProgramType, type)) {
-//     moreFilters.type = {
-//       equals: type,
-//     };
-//   }
-
-//   if (field && isEnumValue(ProgramField, field)) {
-//     moreFilters.field = {
-//       equals: field,
-//     };
-//   }
-
-//   const programs = await prisma.program.findMany({
-//     where: {
-//       name: {
-//         contains: name,
-//         mode: "insensitive",
-//       },
-//       ...moreFilters,
-//     },
-//     skip: skip,
-//     take: itemsPerPage,
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//       isDeleted: true,
-//       creator: {
-//         select: {
-//           id: true,
-//           name: true,
-//           email: true,
-//         },
-//       },
-//     },
-//   });
-//   const count = await prisma.program.count({
-//     where: {
-//       name: {
-//         contains: name,
-//         mode: "insensitive",
-//       },
-//       ...moreFilters,
-//     },
-//   });
-
-//   OrchestrationResult.list(res, programs, count, itemsPerPage, page);
-// };
-
-// const getProgram = async (req: Request, res: Response) => {
-//   const { id } = req.params;
-
-//   if (!id) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Provide an ID"
-//     );
-//     return;
-//   }
-
-//   const program = await prisma.program.findUnique({
-//     where: { id, isDeleted: false },
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//     },
-//   });
-
-//   if (!program) {
-//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Program not found");
-//     return;
-//   }
-
-//   OrchestrationResult.item(res, program, 200);
-// };
-
-// const superUserGetProgram = async (req: Request, res: Response) => {
-//   const { id } = req.params;
-
-//   if (!id) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Provide an ID"
-//     );
-//     return;
-//   }
-
-//   const program = await prisma.program.findUnique({
-//     where: { id },
-//     select: {
-//       id: true,
-//       name: true,
-//       description: true,
-//       type: true,
-//       field: true,
-//       duration: true,
-//       isDeleted: true,
-//       creator: {
-//         select: {
-//           id: true,
-//           name: true,
-//           email: true,
-//         },
-//       },
-//     },
-//   });
-
-//   if (!program) {
-//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Program not found");
-//     return;
-//   }
-
-//   OrchestrationResult.item(res, program, 200);
-// };
+  OrchestrationResult.list(res, courses, count, itemsPerPage, page);
+};
 
 export default {
   createSchoolRating,
-  //   updateProgram,
-  //   deleteProgram,
-  //   restoreProgram,
-  //   getPrograms,
-  //   superUserGetProgram,
-  //   getProgram,
-  //   superUserGetPrograms,
+  updateSchoolRating,
+  deleteSchoolRating,
+  getSchoolRatings,
 };

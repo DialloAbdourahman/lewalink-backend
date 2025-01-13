@@ -135,7 +135,7 @@ export const validateCreateSchool: ValidatorMiddleware[] = [
 ];
 
 export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
-  body("price").exists().isFloat().withMessage("Provide a price"),
+  body("price").isFloat().withMessage("Provide a correct price"),
   body("schoolId").exists().withMessage("Provide a school id"),
   body("programId").exists().withMessage("Provide a program id"),
   validateRequest,

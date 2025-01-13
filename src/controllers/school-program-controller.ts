@@ -1,37 +1,135 @@
-// import { Request, Response } from "express";
-// import jwt from "jsonwebtoken";
-// import { prisma } from "../prisma";
-// import { OrchestrationResult } from "../utils/orchestration-result";
-// import { CODES } from "../enums/codes";
-// import { PasswordManager } from "../utils/password";
-// import { UserType } from "../enums/user-types";
-// import { JWTCodes } from "../utils/jwt-codes";
-// import { AwsSesHelper } from "../utils/aws-ses";
-// import { generateTokens } from "../utils/generate-tokens";
-// import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
-// import { getUserFromGoogle } from "../utils/get-user-from-google";
+import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { prisma } from "../prisma";
+import { OrchestrationResult } from "../utils/orchestration-result";
+import { CODES } from "../enums/codes";
+import { PasswordManager } from "../utils/password";
+import { UserType } from "../enums/user-types";
+import { JWTCodes } from "../utils/jwt-codes";
+import { AwsSesHelper } from "../utils/aws-ses";
+import { generateTokens } from "../utils/generate-tokens";
+import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
+import { getUserFromGoogle } from "../utils/get-user-from-google";
 
-// const createSchoolProgram = async (req: Request, res: Response) => {
-//   let { price, schoolId, programId } = req.body;
+const createSchoolProgram = async (req: Request, res: Response) => {
+  let { price, schoolId, programId } = req.body;
 
-//   const schoolProgram = await prisma.schoolProgram.create({
+  const existingSchool = await prisma.school.findFirst({
+    where: {
+      id: schoolId,
+      isDeleted: false,
+    },
+  });
+
+  if (!existingSchool) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.SCHOOL_DOES_NOT_EXIST,
+      "School does not exist"
+    );
+    return;
+  }
+
+  const existingProgram = await prisma.program.findFirst({
+    where: {
+      id: programId,
+      isDeleted: false,
+    },
+  });
+
+  if (!existingProgram) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.PROGRAM_DOES_NOT_EXIST,
+      "Program does not exist"
+    );
+    return;
+  }
+
+  const existingSchoolProgram = await prisma.schoolProgram.findFirst({
+    where: {
+      schoolId,
+      programId,
+    },
+  });
+
+  if (existingSchoolProgram) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.SCHOOL_PROGRAM_EXISTS_ALREADY,
+      "Program has been attached to school already"
+    );
+    return;
+  }
+
+  const schoolProgram = await prisma.schoolProgram.create({
+    data: {
+      price,
+      programId,
+      schoolId,
+      creatorId: req.currentUser?.id as string,
+    },
+    select: {
+      id: true,
+      school: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      program: {
+        select: { id: true, name: true },
+      },
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  OrchestrationResult.item(res, schoolProgram, 201);
+};
+
+// const updateCourse = async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const { code, title, description, credits } = req.body;
+
+//   if (!id) {
+//     OrchestrationResult.badRequest(
+//       res,
+//       CODES.VALIDATION_REQUEST_ERROR,
+//       "Provide an ID"
+//     );
+//     return;
+//   }
+
+//   const schoolProgram = await prisma.schoolProgram.findUnique({ where: { id } });
+
+//   if (!schoolProgram) {
+//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Course not found");
+//     return;
+//   }
+
+//   const updatedCourse = await prisma.schoolProgram.update({
+//     where: {
+//       id,
+//     },
 //     data: {
-//       price,
-//       programId,
-//       schoolId,
-//       adminId: req.currentUser?.id as string,
+//       code,
+//       title,
+//       description,
+//       credits,
 //     },
 //     select: {
 //       id: true,
-//       school: {
-//         select: {
-//           id: true,
-//           name: true,
-//         },
-//       },
-//       program: {
-//         select: { id: true, name: true },
-//       },
+//       code: true,
+//       title: true,
+//       description: true,
+//       credits: true,
 //       isDeleted: true,
 //       admin: {
 //         select: {
@@ -43,246 +141,196 @@
 //     },
 //   });
 
-//   OrchestrationResult.item(res, schoolProgram, 201);
+//   OrchestrationResult.item(res, updatedCourse, 200);
 // };
 
-// // const updateCourse = async (req: Request, res: Response) => {
-// //   const { id } = req.params;
-// //   const { code, title, description, credits } = req.body;
+// const deleteCourse = async (req: Request, res: Response) => {
+//   const { id } = req.params;
 
-// //   if (!id) {
-// //     OrchestrationResult.badRequest(
-// //       res,
-// //       CODES.VALIDATION_REQUEST_ERROR,
-// //       "Provide an ID"
-// //     );
-// //     return;
-// //   }
+//   if (!id) {
+//     OrchestrationResult.badRequest(
+//       res,
+//       CODES.VALIDATION_REQUEST_ERROR,
+//       "Provide an ID"
+//     );
+//     return;
+//   }
 
-// //   const schoolProgram = await prisma.schoolProgram.findUnique({ where: { id } });
+//   const schoolProgram = await prisma.schoolProgram.findUnique({ where: { id } });
 
-// //   if (!schoolProgram) {
-// //     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Course not found");
-// //     return;
-// //   }
+//   if (!schoolProgram) {
+//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Course not found");
+//     return;
+//   }
 
-// //   const updatedCourse = await prisma.schoolProgram.update({
-// //     where: {
-// //       id,
-// //     },
-// //     data: {
-// //       code,
-// //       title,
-// //       description,
-// //       credits,
-// //     },
-// //     select: {
-// //       id: true,
-// //       code: true,
-// //       title: true,
-// //       description: true,
-// //       credits: true,
-// //       isDeleted: true,
-// //       admin: {
-// //         select: {
-// //           id: true,
-// //           name: true,
-// //           email: true,
-// //         },
-// //       },
-// //     },
-// //   });
+//   const deletedCourse = await prisma.schoolProgram.update({
+//     where: {
+//       id,
+//     },
+//     data: {
+//       isDeleted: true,
+//     },
+//     select: {
+//       id: true,
+//       code: true,
+//       title: true,
+//       description: true,
+//       credits: true,
+//       isDeleted: true,
+//       admin: {
+//         select: {
+//           id: true,
+//           name: true,
+//           email: true,
+//         },
+//       },
+//     },
+//   });
 
-// //   OrchestrationResult.item(res, updatedCourse, 200);
-// // };
-
-// // const deleteCourse = async (req: Request, res: Response) => {
-// //   const { id } = req.params;
-
-// //   if (!id) {
-// //     OrchestrationResult.badRequest(
-// //       res,
-// //       CODES.VALIDATION_REQUEST_ERROR,
-// //       "Provide an ID"
-// //     );
-// //     return;
-// //   }
-
-// //   const schoolProgram = await prisma.schoolProgram.findUnique({ where: { id } });
-
-// //   if (!schoolProgram) {
-// //     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Course not found");
-// //     return;
-// //   }
-
-// //   const deletedCourse = await prisma.schoolProgram.update({
-// //     where: {
-// //       id,
-// //     },
-// //     data: {
-// //       isDeleted: true,
-// //     },
-// //     select: {
-// //       id: true,
-// //       code: true,
-// //       title: true,
-// //       description: true,
-// //       credits: true,
-// //       isDeleted: true,
-// //       admin: {
-// //         select: {
-// //           id: true,
-// //           name: true,
-// //           email: true,
-// //         },
-// //       },
-// //     },
-// //   });
-
-// //   OrchestrationResult.item(res, deletedCourse, 200);
-// // };
-
-// // const restoreCourse = async (req: Request, res: Response) => {
-// //   const { id } = req.params;
-
-// //   if (!id) {
-// //     OrchestrationResult.badRequest(
-// //       res,
-// //       CODES.VALIDATION_REQUEST_ERROR,
-// //       "Provide an ID"
-// //     );
-// //     return;
-// //   }
-
-// //   const schoolProgram = await prisma.schoolProgram.findUnique({ where: { id } });
-
-// //   if (!schoolProgram) {
-// //     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Course not found");
-// //     return;
-// //   }
-
-// //   const restoredCourse = await prisma.schoolProgram.update({
-// //     where: {
-// //       id,
-// //     },
-// //     data: {
-// //       isDeleted: false,
-// //     },
-// //     select: {
-// //       id: true,
-// //       code: true,
-// //       title: true,
-// //       description: true,
-// //       credits: true,
-// //       isDeleted: true,
-// //       admin: {
-// //         select: {
-// //           id: true,
-// //           name: true,
-// //           email: true,
-// //         },
-// //       },
-// //     },
-// //   });
-
-// //   OrchestrationResult.item(res, restoredCourse, 200);
-// // };
-
-// // const getCourses = async (req: Request, res: Response) => {
-// //   const {
-// //     name: title,
-// //     itemsPerPage,
-// //     page,
-// //     skip,
-// //   } = getNameAndPageAndItemsPerPageFromRequestQuery(req);
-
-// //   const courses = await prisma.schoolProgram.findMany({
-// //     where: {
-// //       title: {
-// //         contains: title,
-// //         mode: "insensitive",
-// //       },
-// //       isDeleted: false,
-// //     },
-// //     orderBy: {
-// //       title: "asc",
-// //     },
-// //     skip: skip,
-// //     take: itemsPerPage,
-// //     select: {
-// //       id: true,
-// //       code: true,
-// //       title: true,
-// //       description: true,
-// //       credits: true,
-// //     },
-// //   });
-// //   const count = await prisma.schoolProgram.count({
-// //     where: {
-// //       title: {
-// //         contains: title,
-// //         mode: "insensitive",
-// //       },
-// //       isDeleted: false,
-// //     },
-// //   });
-
-// //   OrchestrationResult.list(res, courses, count, itemsPerPage, page);
-// // };
-
-// // const adminGetCourses = async (req: Request, res: Response) => {
-// //   const {
-// //     name: title,
-// //     itemsPerPage,
-// //     page,
-// //     skip,
-// //   } = getNameAndPageAndItemsPerPageFromRequestQuery(req);
-
-// //   const courses = await prisma.schoolProgram.findMany({
-// //     where: {
-// //       title: {
-// //         contains: title,
-// //         mode: "insensitive",
-// //       },
-// //     },
-// //     orderBy: {
-// //       title: "asc",
-// //     },
-// //     skip: skip,
-// //     take: itemsPerPage,
-// //     select: {
-// //       id: true,
-// //       code: true,
-// //       title: true,
-// //       description: true,
-// //       credits: true,
-// //       isDeleted: true,
-// //       admin: {
-// //         select: {
-// //           id: true,
-// //           name: true,
-// //           email: true,
-// //         },
-// //       },
-// //     },
-// //   });
-// //   const count = await prisma.schoolProgram.count({
-// //     where: {
-// //       title: {
-// //         contains: title,
-// //         mode: "insensitive",
-// //       },
-// //     },
-// //   });
-
-// //   OrchestrationResult.list(res, courses, count, itemsPerPage, page);
-// // };
-
-// export default {
-//   createSchoolProgram,
-//   //   updateCourse,
-//   //   deleteCourse,
-//   //   restoreCourse,
-//   //   getCourses,
-//   //   adminGetCourses,
+//   OrchestrationResult.item(res, deletedCourse, 200);
 // };
+
+// const restoreCourse = async (req: Request, res: Response) => {
+//   const { id } = req.params;
+
+//   if (!id) {
+//     OrchestrationResult.badRequest(
+//       res,
+//       CODES.VALIDATION_REQUEST_ERROR,
+//       "Provide an ID"
+//     );
+//     return;
+//   }
+
+//   const schoolProgram = await prisma.schoolProgram.findUnique({ where: { id } });
+
+//   if (!schoolProgram) {
+//     OrchestrationResult.notFound(res, CODES.NOT_FOUND, "Course not found");
+//     return;
+//   }
+
+//   const restoredCourse = await prisma.schoolProgram.update({
+//     where: {
+//       id,
+//     },
+//     data: {
+//       isDeleted: false,
+//     },
+//     select: {
+//       id: true,
+//       code: true,
+//       title: true,
+//       description: true,
+//       credits: true,
+//       isDeleted: true,
+//       admin: {
+//         select: {
+//           id: true,
+//           name: true,
+//           email: true,
+//         },
+//       },
+//     },
+//   });
+
+//   OrchestrationResult.item(res, restoredCourse, 200);
+// };
+
+// const getCourses = async (req: Request, res: Response) => {
+//   const {
+//     name: title,
+//     itemsPerPage,
+//     page,
+//     skip,
+//   } = getNameAndPageAndItemsPerPageFromRequestQuery(req);
+
+//   const courses = await prisma.schoolProgram.findMany({
+//     where: {
+//       title: {
+//         contains: title,
+//         mode: "insensitive",
+//       },
+//       isDeleted: false,
+//     },
+//     orderBy: {
+//       title: "asc",
+//     },
+//     skip: skip,
+//     take: itemsPerPage,
+//     select: {
+//       id: true,
+//       code: true,
+//       title: true,
+//       description: true,
+//       credits: true,
+//     },
+//   });
+//   const count = await prisma.schoolProgram.count({
+//     where: {
+//       title: {
+//         contains: title,
+//         mode: "insensitive",
+//       },
+//       isDeleted: false,
+//     },
+//   });
+
+//   OrchestrationResult.list(res, courses, count, itemsPerPage, page);
+// };
+
+// const adminGetCourses = async (req: Request, res: Response) => {
+//   const {
+//     name: title,
+//     itemsPerPage,
+//     page,
+//     skip,
+//   } = getNameAndPageAndItemsPerPageFromRequestQuery(req);
+
+//   const courses = await prisma.schoolProgram.findMany({
+//     where: {
+//       title: {
+//         contains: title,
+//         mode: "insensitive",
+//       },
+//     },
+//     orderBy: {
+//       title: "asc",
+//     },
+//     skip: skip,
+//     take: itemsPerPage,
+//     select: {
+//       id: true,
+//       code: true,
+//       title: true,
+//       description: true,
+//       credits: true,
+//       isDeleted: true,
+//       admin: {
+//         select: {
+//           id: true,
+//           name: true,
+//           email: true,
+//         },
+//       },
+//     },
+//   });
+//   const count = await prisma.schoolProgram.count({
+//     where: {
+//       title: {
+//         contains: title,
+//         mode: "insensitive",
+//       },
+//     },
+//   });
+
+//   OrchestrationResult.list(res, courses, count, itemsPerPage, page);
+// };
+
+export default {
+  createSchoolProgram,
+  //   updateCourse,
+  //   deleteCourse,
+  //   restoreCourse,
+  //   getCourses,
+  //   adminGetCourses,
+};

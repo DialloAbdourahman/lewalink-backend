@@ -92,7 +92,7 @@ model Program {
 
 model SchoolProgram {
   id        String  @id @default(uuid())
-  price     Float
+  price     Float?
   visits    Int     @default(0)
   isDeleted Boolean @default(false)
 
