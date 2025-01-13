@@ -134,7 +134,7 @@ model SchoolProgramCourse {
 
 model SchoolRating {
   id        String  @id @default(uuid())
-  stars     Int
+  stars     Float
   message   String
   isDeleted Boolean @default(false)
 

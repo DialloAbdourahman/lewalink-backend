@@ -140,3 +140,10 @@ export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
   body("programId").exists().withMessage("Provide a program id"),
   validateRequest,
 ];
+
+export const validateCreateSchoolRating: ValidatorMiddleware[] = [
+  body("schoolId").exists().withMessage("Provide a school id"),
+  body("stars").exists().isInt().withMessage("Provide a stars"),
+  body("message").exists().withMessage("Provide a message"),
+  validateRequest,
+];
