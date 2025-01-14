@@ -9,8 +9,7 @@ import { SchoolType } from "../enums/school-types";
 import { isEnumValue } from "../utils/is-enum-value";
 import { haversineDistance } from "../utils/haversine";
 import { isNumeric } from "../utils/isDigitsOnly";
-import { Prisma, School } from "@prisma/client";
-import { Sql } from "@prisma/client/runtime/library";
+import { School } from "@prisma/client";
 import { sanitizeInput } from "../utils/sanitize-input";
 
 const createSchool = async (req: Request, res: Response) => {

@@ -1,6 +1,9 @@
 import { Router } from "express";
 import schoolProgramController from "../controllers/school-program-controller";
-import { validateCreateSchoolProgram } from "../middleware/validate-request";
+import {
+  validateCreateSchoolProgram,
+  validateUpdateSchoolProgram,
+} from "../middleware/validate-request";
 import { requireAuth } from "../middleware/require-auth";
 import { verifyRoles } from "../middleware/verify-roles";
 import { UserType } from "../enums/user-types";
@@ -14,31 +17,31 @@ router.post(
   validateCreateSchoolProgram,
   schoolProgramController.createSchoolProgram
 );
-//   .post(
-//     "/restore/:id",
-//     requireAuth,
-//     verifyRoles([UserType.Admin]),
-//     schoolProgramController.restoreCourse
-//   )
-//   .patch(
-//     "/:id",
-//     requireAuth,
-//     verifyRoles([UserType.Admin]),
-//     validateCreateCourse,
-//     schoolProgramController.updateCourse
-//   )
-//   .get("/", schoolProgramController.getCourses)
-//   .get(
-//     "/admin-get-courses",
-//     requireAuth,
-//     verifyRoles([UserType.Admin]),
-//     schoolProgramController.adminGetCourses
-//   )
-//   .delete(
-//     "/:id",
-//     requireAuth,
-//     verifyRoles([UserType.Admin]),
-//     schoolProgramController.deleteCourse
-//   );
+
+router.patch(
+  "/:id",
+  requireAuth,
+  verifyRoles([UserType.Admin, UserType.Editor]),
+  validateUpdateSchoolProgram,
+  schoolProgramController.updateSchoolProgram
+);
+
+router.delete(
+  "/:id",
+  requireAuth,
+  verifyRoles([UserType.Admin, UserType.Editor]),
+  schoolProgramController.deleteSchoolProgram
+);
+
+router.post(
+  "/restore/:id",
+  requireAuth,
+  verifyRoles([UserType.Admin, UserType.Editor]),
+  schoolProgramController.restoreSchoolProgram
+);
+
+router.get("/programs/:schoolId", schoolProgramController.getSchoolPrograms);
+
+router.get("/visit/:id", schoolProgramController.visitSchoolProgram);
 
 export { router as schoolProgramRouter };

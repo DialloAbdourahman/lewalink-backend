@@ -134,6 +134,13 @@ export const validateCreateSchool: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
+export const validateCreateSchoolRating: ValidatorMiddleware[] = [
+  body("schoolId").exists().withMessage("Provide a school id"),
+  body("stars").exists().isInt().withMessage("Provide a stars"),
+  body("message").exists().withMessage("Provide a message"),
+  validateRequest,
+];
+
 export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
   body("price").isFloat().withMessage("Provide a correct price"),
   body("schoolId").exists().withMessage("Provide a school id"),
@@ -141,9 +148,7 @@ export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
-export const validateCreateSchoolRating: ValidatorMiddleware[] = [
-  body("schoolId").exists().withMessage("Provide a school id"),
-  body("stars").exists().isInt().withMessage("Provide a stars"),
-  body("message").exists().withMessage("Provide a message"),
+export const validateUpdateSchoolProgram: ValidatorMiddleware[] = [
+  body("price").isFloat().withMessage("Provide a correct price"),
   validateRequest,
 ];
