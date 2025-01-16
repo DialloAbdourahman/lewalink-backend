@@ -64,6 +64,8 @@ const createAccount = async (req: Request, res: Response) => {
     process.env.ACTIVATE_ACCOUNT_JWT_KEY as string
   );
 
+  console.log("CODEEEEEEEEEEEEEEEEEEEEEEe", code);
+
   const awsHelper = new AwsSesHelper();
   await awsHelper.sendActivateAccountEmail(
     user.email,
