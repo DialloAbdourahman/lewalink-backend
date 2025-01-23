@@ -681,20 +681,6 @@ const seeSchoolWithGeolocalization = async (req: Request, res: Response) => {
     }
   }
 
-  if (
-    Number(latitude) < -90 ||
-    Number(latitude) > 90 ||
-    Number(longitude) < -180 ||
-    Number(longitude) > 180
-  ) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Provide a correct longitude and latitude"
-    );
-    return;
-  }
-
   const prismaWithGeolocation = prisma.$extends({
     result: {
       school: {

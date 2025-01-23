@@ -65,8 +65,6 @@ router.get("/search", schoolController.searchSchools);
 
 router.get("/:id", schoolController.seeSchool);
 
-router.get("/", schoolController.searchSchools);
-
 router.delete(
   "/delete-image",
   requireAuth,
