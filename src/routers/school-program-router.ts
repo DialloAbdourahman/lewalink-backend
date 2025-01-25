@@ -6,7 +6,7 @@ import {
 } from "../middleware/validate-request";
 import { requireAuth } from "../middleware/require-auth";
 import { verifyRoles } from "../middleware/verify-roles";
-import { UserType } from "../enums/user-types";
+import { UserType } from "@prisma/client";
 
 const router = Router();
 

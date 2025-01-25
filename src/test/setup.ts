@@ -6,7 +6,6 @@ const emptyDB = async () => {
   await prisma.school.deleteMany({});
   await prisma.schoolProgram.deleteMany({});
   await prisma.schoolProgramCourse.deleteMany({});
-  await prisma.schoolProgramRating.deleteMany({});
   await prisma.schoolRating.deleteMany({});
   await prisma.user.deleteMany({});
 };

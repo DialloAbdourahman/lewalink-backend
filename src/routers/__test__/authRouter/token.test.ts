@@ -6,7 +6,7 @@ import {
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 export const wait = (sec: number) => {
   return new Promise((resolve) => {

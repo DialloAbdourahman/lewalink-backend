@@ -1,18 +1,9 @@
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
-import { PasswordManager } from "../utils/password";
-import { UserType } from "../enums/user-types";
-import { JWTCodes } from "../utils/jwt-codes";
-import { AwsSesHelper } from "../utils/aws-ses";
-import { generateTokens } from "../utils/generate-tokens";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
-import { getUserFromGoogle } from "../utils/get-user-from-google";
 import { sanitizeInput } from "../utils/sanitize-input";
-import { isEnumValue } from "../utils/is-enum-value";
-import { SchoolType } from "../enums/school-types";
 import { isNumeric } from "../utils/isDigitsOnly";
 import { SchoolProgram } from "@prisma/client";
 
@@ -458,7 +449,7 @@ const searchSchoolPrograms = async (req: Request, res: Response) => {
       ? (String(req.query.orderByDistance) as "asc" | "desc")
       : "asc";
 
-  if (type && !isEnumValue(SchoolType, type)) {
+  if (type) {
     OrchestrationResult.badRequest(
       res,
       CODES.VALIDATION_REQUEST_ERROR,

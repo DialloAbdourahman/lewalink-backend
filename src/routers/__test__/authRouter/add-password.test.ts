@@ -6,7 +6,7 @@ import {
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 it("Should not add password with wrong information", async () => {
   const { accessToken } = await loginUser(UserType.Client, true, false, true);

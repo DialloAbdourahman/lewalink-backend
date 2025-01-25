@@ -2,7 +2,7 @@ import { app } from "../../../app";
 import request from "supertest";
 import { CODES } from "../../../enums/codes";
 import { loginUser } from "../../../test/helpers/auth-tests";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 it("Should not get the list of users if unauthenticated", async () => {
   const response = await request(app).get("/api/auth/v1/users").send();

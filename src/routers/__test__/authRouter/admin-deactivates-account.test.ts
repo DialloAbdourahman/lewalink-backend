@@ -3,7 +3,7 @@ import request from "supertest";
 import { CODES } from "../../../enums/codes";
 import { loginUser } from "../../../test/helpers/auth-tests";
 import { prisma } from "../../../prisma";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 it("Should not allow a user to deactivate another user's account if he is unauthenticated", async () => {
   const { createdUser } = await loginUser(UserType.Client, true);

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { UserType } from "../enums/user-types";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
+import { UserType } from "@prisma/client";
 
 export const verifyRoles = (roles: UserType[]) => {
   return (req: Request, res: Response, next: NextFunction) => {

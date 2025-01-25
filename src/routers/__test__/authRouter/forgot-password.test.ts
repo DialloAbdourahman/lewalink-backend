@@ -2,7 +2,7 @@ import { app } from "../../../app";
 import request from "supertest";
 import { CODES } from "../../../enums/codes";
 import { loginUser } from "../../../test/helpers/auth-tests";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 it("Should not generate code if account has not been activated", async () => {
   const { createdUser } = await loginUser(UserType.Client, false);

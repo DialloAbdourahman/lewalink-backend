@@ -4,13 +4,22 @@ import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
 import { PasswordManager } from "../utils/password";
-import { UserType } from "../enums/user-types";
+// import { UserType } from "../enums/user-types";
 import { JWTCodes } from "../utils/jwt-codes";
 import { AwsSesHelper } from "../utils/aws-ses";
 import { generateTokens } from "../utils/generate-tokens";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
-import { UserReturned } from "../enums/entity-returned";
 import { getUserFromGoogle } from "../utils/get-user-from-google";
+import { UserType } from "@prisma/client";
+
+export type UserReturned = {
+  id: string;
+  name: string;
+  email: string;
+  type: string;
+  accessToken?: string;
+  refreshToken?: string;
+};
 
 const createAccount = async (req: Request, res: Response) => {
   let { email, password, name } = req.body;

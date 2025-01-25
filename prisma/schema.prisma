@@ -144,3 +144,78 @@ model SchoolRating {
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId String
 }
+
+// Delete the search school-program in the school-program controller.  
+
+// Position yourself on the school table and work on the search query. It is possible to do something like an a left join with the program table. (don't forget the price too)
+
+// const { Client } = require("pg"); // Assuming you're using pg library
+
+// // Input body structure
+// const filters = [
+//   { field: "name", operator: "eq", value: "test" },
+//   { field: "type", operator: "eq", value: "asdf" },
+//   { field: "rating", operator: "gte", value: 4.5 },
+//   { field: "isDeleted", operator: "eq", value: false },
+// ];
+
+// // Map of supported operators
+// const operatorsMap = {
+//   eq: "=",
+//   neq: "!=",
+//   gt: ">",
+//   gte: ">=",
+//   lt: "<",
+//   lte: "<=",
+//   like: "ILIKE",
+// };
+
+// // Start query
+// let query = `
+//   SELECT DISTINCT s.*
+//   FROM "School" s
+//   LEFT JOIN "SchoolProgram" sp ON s.id = sp."schoolId" AND sp."isDeleted" = FALSE
+//   LEFT JOIN "Program" p ON sp."programId" = p.id
+//   WHERE 1=1`; // Start with a default true condition to simplify adding AND clauses
+
+// const queryParams = [];
+
+// // Process filters
+// filters.forEach((filter) => {
+//   const { field, operator, value } = filter;
+//   const sqlOperator = operatorsMap[operator];
+//   if (sqlOperator && value !== undefined) {
+//     query += ` AND ${field} ${sqlOperator} $${queryParams.length + 1}`;
+//     queryParams.push(value);
+//   }
+// });
+
+// // Add ordering or pagination (optional)
+// query += ` ORDER BY s.name ASC`; // Example: ordering by school name
+
+// // Debugging output
+// console.log("Generated Query:", query);
+// console.log("Query Parameters:", queryParams);
+
+// // Example database execution
+// (async () => {
+//   const client = new Client({
+//     user: "your_username",
+//     host: "your_host",
+//     database: "your_database",
+//     password: "your_password",
+//     port: 5432,
+//   });
+
+//   await client.connect();
+//   try {
+//     const result = await client.query(query, queryParams);
+//     console.log("Query Result:", result.rows);
+//   } catch (error) {
+//     console.error("Error Executing Query:", error);
+//   } finally {
+//     await client.end();
+//   }
+// })();
+
+// think on adding the currency on the school-program table.

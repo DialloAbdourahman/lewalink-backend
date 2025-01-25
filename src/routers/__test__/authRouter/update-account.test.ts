@@ -5,7 +5,7 @@ import {
   loginUser,
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 it("Should not update account information is missing", async () => {
   const { accessToken } = await loginUser(UserType.Client, true);

@@ -3,20 +3,9 @@ import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
-import { isEnumValue } from "../utils/is-enum-value";
-import { ProgramField, ProgramType } from "@prisma/client";
 
 const createProgram = async (req: Request, res: Response) => {
   let { type, name, description, duration, field } = req.body;
-
-  if (!isEnumValue(ProgramType, type) || !isEnumValue(ProgramField, field)) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Enter a correct field and type"
-    );
-    return;
-  }
 
   const program = await prisma.program.create({
     data: {
@@ -57,15 +46,6 @@ const updateProgram = async (req: Request, res: Response) => {
       res,
       CODES.VALIDATION_REQUEST_ERROR,
       "Provide an ID"
-    );
-    return;
-  }
-
-  if (!isEnumValue(ProgramType, type) || !isEnumValue(ProgramField, field)) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Enter a correct field and type"
     );
     return;
   }
@@ -210,19 +190,17 @@ const getPrograms = async (req: Request, res: Response) => {
 
   const moreFilters: { [key: string]: any } = {};
 
-  if (type && isEnumValue(ProgramType, type)) {
+  if (type) {
     moreFilters.type = {
       equals: type,
     };
   }
 
-  if (field && isEnumValue(ProgramField, field)) {
+  if (field) {
     moreFilters.field = {
       equals: field,
     };
   }
-
-  console.log("more filters", moreFilters);
 
   const programs = await prisma.program.findMany({
     where: {
@@ -267,13 +245,13 @@ const superUserGetPrograms = async (req: Request, res: Response) => {
 
   const moreFilters: { [key: string]: any } = {};
 
-  if (type && isEnumValue(ProgramType, type)) {
+  if (type) {
     moreFilters.type = {
       equals: type,
     };
   }
 
-  if (field && isEnumValue(ProgramField, field)) {
+  if (field) {
     moreFilters.field = {
       equals: field,
     };

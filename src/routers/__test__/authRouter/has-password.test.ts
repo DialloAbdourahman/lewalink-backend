@@ -5,7 +5,7 @@ import {
   loginUser,
   userDoesNotExistLogin,
 } from "../../../test/helpers/auth-tests";
-import { UserType } from "../../../enums/user-types";
+import { UserType } from "@prisma/client";
 
 it("Should not get the has password info if the user is not activated", async () => {
   const { accessToken } = await loginUser(UserType.Client, false);

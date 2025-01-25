@@ -5,11 +5,9 @@ import { CODES } from "../enums/codes";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
 import { AwsS3Helper } from "../utils/aws-s3-helper";
 import { generateRandomString } from "../utils/generateRandomString";
-import { SchoolType } from "../enums/school-types";
-import { isEnumValue } from "../utils/is-enum-value";
 import { haversineDistance } from "../utils/haversine";
 import { isNumeric } from "../utils/isDigitsOnly";
-import { School } from "@prisma/client";
+import { School, SchoolType } from "@prisma/client";
 import { sanitizeInput } from "../utils/sanitize-input";
 
 const createSchool = async (req: Request, res: Response) => {
@@ -42,15 +40,6 @@ const createSchool = async (req: Request, res: Response) => {
       res,
       CODES.MULTER_TOO_MANY_IMAGES,
       `Maximum ${process.env.TOTAL_IMAGES_PER_SCHOOL} images`
-    );
-    return;
-  }
-
-  if (!isEnumValue(SchoolType, type)) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Please provide a correct school type"
     );
     return;
   }
@@ -345,15 +334,6 @@ const updateSchool = async (req: Request, res: Response) => {
     phoneNumber,
     website,
   } = req.body;
-
-  if (!isEnumValue(SchoolType, type)) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Please provide a correct school type"
-    );
-    return;
-  }
 
   const school = await prisma.school.findUnique({
     where: {
@@ -757,7 +737,7 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
 
   const moreFilters: { [key: string]: any } = {};
 
-  if (type && isEnumValue(SchoolType, type)) {
+  if (type) {
     moreFilters.type = {
       equals: type,
     };
@@ -865,15 +845,6 @@ const searchSchools = async (req: Request, res: Response) => {
     req.query.orderByDistance === "asc" || req.query.orderByDistance === "desc"
       ? (String(req.query.orderByDistance) as "asc" | "desc")
       : "asc";
-
-  if (type && !isEnumValue(SchoolType, type)) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.VALIDATION_REQUEST_ERROR,
-      "Provide a correct type"
-    );
-    return;
-  }
 
   if (longitude || latitude) {
     if (!isNumeric(latitude) || !isNumeric(longitude)) {
