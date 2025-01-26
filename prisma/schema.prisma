@@ -145,5 +145,6 @@ model SchoolRating {
   schoolId String
 }
 
-// Think about the price on the school-program. Only when the program Id is entered to avoid duplications.
+// Think about order by price (should it be second, third, etc etc).
+// Loop though the schools and come out with something that looks like a school.
 // Think on adding the currency on the school-program table.

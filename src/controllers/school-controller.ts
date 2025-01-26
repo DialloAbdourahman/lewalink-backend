@@ -948,7 +948,9 @@ const searchSchools = async (req: Request, res: Response) => {
           programMaxPrice
         )} AND`
       }
-      s."isDeleted" = false
+      s."isDeleted" = false AND
+      sp."isDeleted" = false AND
+      p."isDeleted" = false   
     ${
       (programName ||
         programField ||
@@ -994,15 +996,17 @@ const searchSchools = async (req: Request, res: Response) => {
           programMaxPrice
         )} AND`
       }
-      s."isDeleted" = false
-    ${
-      (programName ||
-        programField ||
-        programType ||
-        programMinPrice ||
-        programMaxPrice) &&
-      "GROUP BY s.id"
-    }
+      s."isDeleted" = false AND
+      sp."isDeleted" = false AND
+      p."isDeleted" = false    
+      ${
+        (programName ||
+          programField ||
+          programType ||
+          programMinPrice ||
+          programMaxPrice) &&
+        "GROUP BY s.id"
+      }
     
   `;
 
