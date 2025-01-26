@@ -7,7 +7,7 @@ import { AwsS3Helper } from "../utils/aws-s3-helper";
 import { generateRandomString } from "../utils/generateRandomString";
 import { haversineDistance } from "../utils/haversine";
 import { isNumeric } from "../utils/isDigitsOnly";
-import { School, SchoolType } from "@prisma/client";
+import { School, SchoolProgram, SchoolType } from "@prisma/client";
 import { sanitizeInput } from "../utils/sanitize-input";
 
 const createSchool = async (req: Request, res: Response) => {
@@ -814,16 +814,16 @@ const searchSchools = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
+  // School search query
   const city = req.query.city
     ? String(sanitizeInput(req.query.city as string))
     : "";
   const country = req.query.country
     ? String(sanitizeInput(req.query.country as string))
     : "";
-  let type = req.query.type
+  const type = req.query.type
     ? String(sanitizeInput(req.query.type as string))
     : "";
-
   const longitude = req.query.longitude
     ? String(sanitizeInput(req.query.longitude as string))
     : "";
@@ -831,21 +831,38 @@ const searchSchools = async (req: Request, res: Response) => {
     ? String(sanitizeInput(req.query.latitude as string))
     : "";
 
+  // Program search query
+  const programName = req.query.programName
+    ? String(sanitizeInput(req.query.programName as string))
+    : "";
+  const programType = req.query.programType
+    ? String(sanitizeInput(req.query.programType as string))
+    : "";
+  const programField = req.query.programField
+    ? String(sanitizeInput(req.query.programField as string))
+    : "";
+  const programMinPrice = req.query.programMinPrice
+    ? String(sanitizeInput(req.query.programMinPrice as string))
+    : "";
+  const programMaxPrice = req.query.programMaxPrice
+    ? String(sanitizeInput(req.query.programMaxPrice as string))
+    : "";
+
+  // Order by
   const orderByVisits =
     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
       ? (String(req.query.orderByVisits) as "asc" | "desc")
       : "desc";
-
   const orderByRating =
     req.query.orderByRating === "asc" || req.query.orderByRating === "desc"
       ? (String(req.query.orderByRating) as "asc" | "desc")
       : "desc";
-
   const orderByDistance =
     req.query.orderByDistance === "asc" || req.query.orderByDistance === "desc"
       ? (String(req.query.orderByDistance) as "asc" | "desc")
       : "asc";
 
+  // Query validations
   if (longitude || latitude) {
     if (!isNumeric(latitude) || !isNumeric(longitude)) {
       OrchestrationResult.badRequest(
@@ -855,7 +872,6 @@ const searchSchools = async (req: Request, res: Response) => {
       );
       return;
     }
-
     if (
       Number(latitude) < -90 ||
       Number(latitude) > 90 ||
@@ -871,79 +887,295 @@ const searchSchools = async (req: Request, res: Response) => {
     }
   }
 
+  // Postgres search query
   const query = `
-      SELECT
-        s.id,
-        s.name,
-        s.description,
-        s.type,
-        s.longitude,
-        s.latitude,
-        s.country,
-        s.city,
-        s.email,
-        'phone-number' AS phoneNumber,
-        s.website,
-        s.visits,
-        s.rating
-        ${
-          longitude &&
-          latitude &&
-          `,(6371 * acos(cos(radians(${Number(
-            latitude
-          )})) * cos(radians(s.latitude)) *
-          cos(radians(s.longitude) - radians(${Number(longitude)})) +
-          sin(radians(${Number(
-            latitude
-          )})) * sin(radians(s.latitude)))) AS distance`
-        }
-      FROM "School" AS s
-      WHERE
-        s.name ILIKE '%${name}%' AND
-        s.country ILIKE '%${country}%' AND
-        s.city ILIKE '%${city}%' AND
-        ${type && `s.type = '${type}' AND`}
-        s."isDeleted" = false
-      ORDER BY
-        ${longitude && latitude && `distance ${orderByDistance},`}
-        rating ${orderByRating},
-        visits ${orderByVisits}
-      LIMIT ${itemsPerPage} OFFSET ${skip}
+    SELECT
+      s.id AS schoolId,
+      s.name AS schoolName,
+      s.description AS schoolDescription,
+      s.type AS schoolType,
+      s.longitude AS schoolLongitude,
+      s.latitude AS schoolLatitude,
+      s.country AS schoolCountry,
+      s.city AS schoolCity,
+      s.email AS schoolEmail,
+      'phone-number' AS schoolPhoneNumber,
+      s.website AS schoolWebsite,
+      s.visits AS schoolVisits,
+      s.rating AS schoolRating
+      ${
+        (programName ||
+          programField ||
+          programType ||
+          programMinPrice ||
+          programMaxPrice) &&
+        `, STRING_AGG(p.name, ', ') AS programNames`
+      }
+      ${
+        longitude &&
+        latitude &&
+        `,(6371 * acos(cos(radians(${Number(
+          latitude
+        )})) * cos(radians(s.latitude)) *
+        cos(radians(s.longitude) - radians(${Number(longitude)})) +
+        sin(radians(${Number(
+          latitude
+        )})) * sin(radians(s.latitude)))) AS schoolDistance`
+      }
+    FROM "School" AS s
+    ${
+      (programName ||
+        programField ||
+        programType ||
+        programMinPrice ||
+        programMaxPrice) &&
+      ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId" 
+        INNER JOIN "Program" as p ON sp."programId" = p."id"
+      `
+    }
+    WHERE
+      s.name ILIKE '%${name}%' AND
+      s.country ILIKE '%${country}%' AND
+      s.city ILIKE '%${city}%' AND
+      ${type && `s.type = '${type}' AND`}
+      ${programName && `p.name ILIKE '%${programName}%' AND`}
+      ${programField && `p.field = '${programField}' AND`}
+      ${programType && `p.type = '${programType}' AND`}
+      ${
+        programMaxPrice &&
+        programMinPrice &&
+        `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
+          programMaxPrice
+        )} AND`
+      }
+      s."isDeleted" = false
+    ${
+      (programName ||
+        programField ||
+        programType ||
+        programMinPrice ||
+        programMaxPrice) &&
+      "GROUP BY s.id"
+    }
+    ORDER BY
+      ${longitude && latitude && `schoolDistance ${orderByDistance},`}
+      schoolRating ${orderByRating},
+      schoolVisits ${orderByVisits}
+    LIMIT ${itemsPerPage} OFFSET ${skip}
   `;
 
+  // Postgres count query
   const countQuery = `
-      SELECT
-        COUNT(s.id)
-        ${
-          longitude &&
-          latitude &&
-          `,(6371 * acos(cos(radians(${Number(
-            latitude
-          )})) * cos(radians(s.latitude)) *
-          cos(radians(s.longitude) - radians(${Number(longitude)})) +
-          sin(radians(${Number(
-            latitude
-          )})) * sin(radians(s.latitude)))) AS distance`
-        }
-      FROM "School" AS s
-      WHERE
-        s.name ILIKE '%${name}%' AND
-        s.country ILIKE '%${country}%' AND
-        s.city ILIKE '%${city}%' AND
-        ${type && `s.type = '${type}' AND`}
-        s."isDeleted" = false
-      GROUP BY
-        s.latitude, s.longitude
+  SELECT
+    COUNT(s.id)
+    FROM "School" AS s
+    ${
+      (programName ||
+        programField ||
+        programType ||
+        programMinPrice ||
+        programMaxPrice) &&
+      ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId" 
+        INNER JOIN "Program" as p ON sp."programId" = p."id"
+      `
+    }
+    WHERE
+      s.name ILIKE '%${name}%' AND
+      s.country ILIKE '%${country}%' AND
+      s.city ILIKE '%${city}%' AND
+      ${type && `s.type = '${type}' AND`}
+      ${programName && `p.name ILIKE '%${programName}%' AND`}
+      ${programField && `p.field = '${programField}' AND`}
+      ${programType && `p.type = '${programType}' AND`}
+      ${
+        programMaxPrice &&
+        programMinPrice &&
+        `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
+          programMaxPrice
+        )} AND`
+      }
+      s."isDeleted" = false
+    ${
+      (programName ||
+        programField ||
+        programType ||
+        programMinPrice ||
+        programMaxPrice) &&
+      "GROUP BY s.id"
+    }
+    
   `;
 
-  const schools = await prisma.$queryRawUnsafe<School[]>(query);
+  const schools = (await prisma.$queryRawUnsafe(query)) as [];
   const countData = await prisma.$queryRawUnsafe<{ count: number }[]>(
     countQuery
   );
-  const count = Number(countData[0].count);
+  const count = Number(
+    countData.length > 0 ? countData[countData.length - 1].count : 0
+  );
 
   OrchestrationResult.list(res, schools, count, itemsPerPage, page);
 };
+
+// const searchSchools = async (req: Request, res: Response) => {
+//   const { name, itemsPerPage, page, skip } =
+//     getNameAndPageAndItemsPerPageFromRequestQuery(req);
+
+//   const programId = req.query.programId
+//     ? String(sanitizeInput(req.query.programId as string))
+//     : "";
+
+//   const city = req.query.city
+//     ? String(sanitizeInput(req.query.city as string))
+//     : "";
+//   const country = req.query.country
+//     ? String(sanitizeInput(req.query.country as string))
+//     : "";
+//   let type = req.query.type
+//     ? String(sanitizeInput(req.query.type as string))
+//     : "";
+
+//   const longitude = req.query.longitude
+//     ? String(sanitizeInput(req.query.longitude as string))
+//     : "";
+//   const latitude = req.query.latitude
+//     ? String(sanitizeInput(req.query.latitude as string))
+//     : "";
+
+//   const orderByVisits =
+//     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
+//       ? (String(req.query.orderByVisits) as "asc" | "desc")
+//       : "desc";
+
+//   const orderByRating =
+//     req.query.orderByRating === "asc" || req.query.orderByRating === "desc"
+//       ? (String(req.query.orderByRating) as "asc" | "desc")
+//       : "desc";
+
+//   const orderByDistance =
+//     req.query.orderByDistance === "asc" || req.query.orderByDistance === "desc"
+//       ? (String(req.query.orderByDistance) as "asc" | "desc")
+//       : "asc";
+
+//   if (type) {
+//     OrchestrationResult.badRequest(
+//       res,
+//       CODES.VALIDATION_REQUEST_ERROR,
+//       "Provide a correct type"
+//     );
+//     return;
+//   }
+
+//   if (longitude || latitude) {
+//     if (!isNumeric(latitude) || !isNumeric(longitude)) {
+//       OrchestrationResult.badRequest(
+//         res,
+//         CODES.VALIDATION_REQUEST_ERROR,
+//         "Provide a correct longitude and latitude"
+//       );
+//       return;
+//     }
+
+//     if (
+//       Number(latitude) < -90 ||
+//       Number(latitude) > 90 ||
+//       Number(longitude) < -180 ||
+//       Number(longitude) > 180
+//     ) {
+//       OrchestrationResult.badRequest(
+//         res,
+//         CODES.VALIDATION_REQUEST_ERROR,
+//         "Provide a correct longitude and latitude"
+//       );
+//       return;
+//     }
+//   }
+
+//   const query = `
+//       SELECT
+//         s.id AS schoolId,
+//         s.name AS schoolName,
+//         s.description AS schoolDescription,
+//         s.type AS schoolType,
+//         s.longitude AS schoolLongitude,
+//         s.latitude AS schoolLatitude,
+//         s.country AS schoolCountry,
+//         s.city AS schoolCity,
+//         s.email AS schoolEmail,
+//         'phone-number' AS schoolPhoneNumber,
+//         s.website AS schoolWebsite,
+//         s.visits AS schoolVisits,
+//         s.rating AS schoolRating
+//         ${programId && `,p.name AS programName`}
+//         ${
+//           longitude &&
+//           latitude &&
+//           `,(6371 * acos(cos(radians(${Number(
+//             latitude
+//           )})) * cos(radians(s.latitude)) *
+//           cos(radians(s.longitude) - radians(${Number(longitude)})) +
+//           sin(radians(${Number(
+//             latitude
+//           )})) * sin(radians(s.latitude)))) AS schoolDistance`
+//         }
+//       FROM "School" AS s
+//       ${
+//         programId &&
+//         ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId"
+//           INNER JOIN "Program" as p ON sp."programId" = p."id"
+//         `
+//       }
+//       WHERE
+//         s.name ILIKE '%${name}%' AND
+//         s.country ILIKE '%${country}%' AND
+//         s.city ILIKE '%${city}%' AND
+//         ${type && `s.type = '${type}' AND`}
+//         ${programId && `p.id = '${programId}' AND`}
+//         s."isDeleted" = false AND
+//         sp."isDeleted" = false
+//       ORDER BY
+//         ${longitude && latitude && `schoolDistance ${orderByDistance},`}
+//         schoolRating ${orderByRating},
+//         schoolVisits ${orderByVisits}
+//       LIMIT ${itemsPerPage} OFFSET ${skip}
+//   `;
+
+//   console.log(query);
+
+//   // const countQuery = `
+//   //     SELECT
+//   //       COUNT(s.id)
+//   //       ${
+//   //         longitude &&
+//   //         latitude &&
+//   //         `,(6371 * acos(cos(radians(${Number(
+//   //           latitude
+//   //         )})) * cos(radians(s.latitude)) *
+//   //         cos(radians(s.longitude) - radians(${Number(longitude)})) +
+//   //         sin(radians(${Number(
+//   //           latitude
+//   //         )})) * sin(radians(s.latitude)))) AS distance`
+//   //       }
+//   //     FROM "School" AS s
+//   //     WHERE
+//   //       s.name ILIKE '%${name}%' AND
+//   //       s.country ILIKE '%${country}%' AND
+//   //       s.city ILIKE '%${city}%' AND
+//   //       ${type && `s.type = '${type}' AND`}
+//   //       s."isDeleted" = false
+//   //     GROUP BY
+//   //       s.latitude, s.longitude
+//   // `;
+
+//   const schoolPrograms = await prisma.$queryRawUnsafe<SchoolProgram[]>(query);
+//   // const countData = await prisma.$queryRawUnsafe<{ count: number }[]>(
+//   //   countQuery
+//   // );
+//   // const count = Number(countData[0].count);
+
+//   // OrchestrationResult.list(res, schools, count, itemsPerPage, page);
+//   res.send(schoolPrograms);
+// };
 
 export default {
   createSchool,

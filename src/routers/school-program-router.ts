@@ -51,10 +51,6 @@ router.get(
   schoolProgramController.superUserSeeSchoolProgram
 );
 
-router.get("/search", schoolProgramController.searchSchoolPrograms);
-
 router.get("/:id", schoolProgramController.SeeSchoolProgram);
 
 export { router as schoolProgramRouter };
-
-// Search school programs with geolocalization

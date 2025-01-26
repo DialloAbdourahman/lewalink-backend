@@ -16,6 +16,9 @@ export class AwsSesHelper {
         user: process.env.AWS_SES_SMTP_USERNAME,
         pass: process.env.AWS_SES_SMTP_PASSWORD,
       },
+      // tls: {
+      //   rejectUnauthorized: false, // Bypass certificate validation
+      // },
     });
   }
 
