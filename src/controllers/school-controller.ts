@@ -948,9 +948,18 @@ const searchSchools = async (req: Request, res: Response) => {
           programMaxPrice
         )} AND`
       }
-      s."isDeleted" = false AND
-      sp."isDeleted" = false AND
-      p."isDeleted" = false   
+      ${
+        (programName ||
+          programField ||
+          programType ||
+          programMinPrice ||
+          programMaxPrice) &&
+        ` 
+          sp."isDeleted" = false AND
+          p."isDeleted" = false  AND 
+        `
+      }
+      s."isDeleted" = false 
     ${
       (programName ||
         programField ||
@@ -965,6 +974,8 @@ const searchSchools = async (req: Request, res: Response) => {
       schoolVisits ${orderByVisits}
     LIMIT ${itemsPerPage} OFFSET ${skip}
   `;
+
+  console.log(query);
 
   // Postgres count query
   const countQuery = `
@@ -996,9 +1007,18 @@ const searchSchools = async (req: Request, res: Response) => {
           programMaxPrice
         )} AND`
       }
-      s."isDeleted" = false AND
-      sp."isDeleted" = false AND
-      p."isDeleted" = false    
+      ${
+        (programName ||
+          programField ||
+          programType ||
+          programMinPrice ||
+          programMaxPrice) &&
+        ` 
+          sp."isDeleted" = false AND
+          p."isDeleted" = false  AND 
+        `
+      }
+      s."isDeleted" = false 
       ${
         (programName ||
           programField ||
@@ -1010,7 +1030,29 @@ const searchSchools = async (req: Request, res: Response) => {
     
   `;
 
-  const schools = (await prisma.$queryRawUnsafe(query)) as [];
+  const schools = (await prisma.$queryRawUnsafe(query)) as any[];
+  const formattedSchools = schools.map((school) => {
+    return {
+      id: school.schoolid,
+      name: school.schoolname,
+      description: school.schooldescription,
+      type: school.schooltype,
+      longitude: school.schoollongitude,
+      latitude: school.schoollatitude,
+      country: school.schoolcountry,
+      city: school.schoolcity,
+      email: school.schoolemail,
+      phoneNumber: school.schoolphonenumber,
+      website: school.schoolwebsite,
+      visits: school.schoolvisits,
+      rating: school.schoolrating,
+      distance: school.schooldistance || undefined,
+      programs: school.programnames
+        ? school.programnames.split(", ")
+        : undefined,
+    };
+  });
+
   const countData = await prisma.$queryRawUnsafe<{ count: number }[]>(
     countQuery
   );
@@ -1018,7 +1060,7 @@ const searchSchools = async (req: Request, res: Response) => {
     countData.length > 0 ? countData[countData.length - 1].count : 0
   );
 
-  OrchestrationResult.list(res, schools, count, itemsPerPage, page);
+  OrchestrationResult.list(res, formattedSchools, count, itemsPerPage, page);
 };
 
 // const searchSchools = async (req: Request, res: Response) => {
