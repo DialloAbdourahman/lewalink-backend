@@ -3,9 +3,6 @@ import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
-import { sanitizeInput } from "../utils/sanitize-input";
-import { isNumeric } from "../utils/isDigitsOnly";
-import { SchoolProgram } from "@prisma/client";
 
 const createSchoolProgram = async (req: Request, res: Response) => {
   let { price, schoolId, programId } = req.body;
@@ -73,17 +70,23 @@ const createSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
       program: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, createdAt: true, updatedAt: true },
       },
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
           id: true,
           name: true,
           email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
     },
@@ -127,17 +130,23 @@ const updateSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
       program: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, createdAt: true, updatedAt: true },
       },
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
           id: true,
           name: true,
           email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
     },
@@ -180,17 +189,23 @@ const deleteSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
       program: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, createdAt: true, updatedAt: true },
       },
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
           id: true,
           name: true,
           email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
     },
@@ -233,17 +248,23 @@ const restoreSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
       program: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, createdAt: true, updatedAt: true },
       },
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
           id: true,
           name: true,
           email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
     },
@@ -289,14 +310,18 @@ const visitSchoolProgram = async (req: Request, res: Response) => {
         },
       },
       program: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, createdAt: true, updatedAt: true },
       },
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
           id: true,
           name: true,
           email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
     },
@@ -307,6 +332,8 @@ const visitSchoolProgram = async (req: Request, res: Response) => {
 
 const getSchoolPrograms = async (req: Request, res: Response) => {
   const { schoolId } = req.params;
+  const { itemsPerPage, page, skip } =
+    getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
   const schoolPrograms = await prisma.schoolProgram.findMany({
     where: {
@@ -316,6 +343,8 @@ const getSchoolPrograms = async (req: Request, res: Response) => {
       },
       isDeleted: false,
     },
+    skip: skip,
+    take: itemsPerPage,
     select: {
       program: {
         select: {
@@ -325,13 +354,27 @@ const getSchoolPrograms = async (req: Request, res: Response) => {
           type: true,
           field: true,
           duration: true,
+          createdAt: true,
+          updatedAt: true,
         },
+      },
+      createdAt: true,
+      updatedAt: true,
+      isDeleted: false,
+    },
+  });
+
+  const count = await prisma.schoolProgram.count({
+    where: {
+      schoolId,
+      program: {
+        isDeleted: false,
       },
       isDeleted: false,
     },
   });
 
-  OrchestrationResult.item(res, schoolPrograms);
+  OrchestrationResult.list(res, schoolPrograms, count, itemsPerPage, page);
 };
 
 const superUserSeeSchoolProgram = async (req: Request, res: Response) => {
@@ -352,14 +395,18 @@ const superUserSeeSchoolProgram = async (req: Request, res: Response) => {
         },
       },
       program: {
-        select: { id: true, name: true },
+        select: { id: true, name: true, createdAt: true, updatedAt: true },
       },
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
           id: true,
           name: true,
           email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
     },
@@ -393,10 +440,24 @@ const SeeSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
+          createdAt: true,
+          updatedAt: true,
         },
       },
+      createdAt: true,
+      updatedAt: true,
       program: {
-        select: { id: true, name: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          type: true,
+          field: true,
+          duration: true,
+          createdAt: true,
+          updatedAt: true,
+          isDeleted: true,
+        },
       },
     },
   });

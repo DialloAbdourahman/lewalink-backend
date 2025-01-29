@@ -4,7 +4,6 @@ import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
 import { PasswordManager } from "../utils/password";
-// import { UserType } from "../enums/user-types";
 import { JWTCodes } from "../utils/jwt-codes";
 import { AwsSesHelper } from "../utils/aws-ses";
 import { generateTokens } from "../utils/generate-tokens";
@@ -17,6 +16,8 @@ export type UserReturned = {
   name: string;
   email: string;
   type: string;
+  createdAt: Date;
+  updatedAt: Date;
   accessToken?: string;
   refreshToken?: string;
 };
@@ -72,8 +73,6 @@ const createAccount = async (req: Request, res: Response) => {
     { id: user.id, email: user.email },
     process.env.ACTIVATE_ACCOUNT_JWT_KEY as string
   );
-
-  console.log("CODEEEEEEEEEEEEEEEEEEEEEEe", code);
 
   const awsHelper = new AwsSesHelper();
   await awsHelper.sendActivateAccountEmail(
@@ -203,6 +202,8 @@ const signin = async (req: Request, res: Response) => {
     name: user.name || "",
     email: user.email,
     type: user.type,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
     accessToken,
     refreshToken,
   };
@@ -216,6 +217,8 @@ const getProfile = async (req: Request, res: Response) => {
     name: req.currentUser!.name || "",
     email: req.currentUser!.email,
     type: req.currentUser!.type,
+    createdAt: req.currentUser!.createdAt,
+    updatedAt: req.currentUser!.updatedAt,
   };
 
   OrchestrationResult.item(res, data, 200);
@@ -374,6 +377,8 @@ const updateAccount = async (req: Request, res: Response) => {
       name: true,
       email: true,
       type: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 
@@ -381,6 +386,8 @@ const updateAccount = async (req: Request, res: Response) => {
     id: updateduser.id,
     name: updateduser.name || "",
     email: updateduser.email,
+    createdAt: updateduser.createdAt,
+    updatedAt: updateduser.updatedAt,
     type: updateduser.type,
   };
 
@@ -504,6 +511,9 @@ const refresh = async (req: Request, res: Response) => {
       name: foundUser.name || "",
       email: foundUser.email,
       type: foundUser.type,
+      createdAt: foundUser.createdAt,
+      updatedAt: foundUser.updatedAt,
+
       accessToken,
       refreshToken,
     };
@@ -951,6 +961,8 @@ const oauthGoogle = async (req: Request, res: Response) => {
     name: user.name || "",
     email: user.email,
     type: user.type,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
     accessToken,
     refreshToken,
   };

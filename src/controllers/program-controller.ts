@@ -23,6 +23,8 @@ const createProgram = async (req: Request, res: Response) => {
       type: true,
       field: true,
       duration: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -74,6 +76,8 @@ const updateProgram = async (req: Request, res: Response) => {
       type: true,
       field: true,
       duration: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -121,6 +125,8 @@ const deleteProgram = async (req: Request, res: Response) => {
       type: true,
       field: true,
       duration: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -168,6 +174,8 @@ const restoreProgram = async (req: Request, res: Response) => {
       type: true,
       field: true,
       duration: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -219,6 +227,8 @@ const getPrograms = async (req: Request, res: Response) => {
       description: true,
       type: true,
       field: true,
+      createdAt: true,
+      updatedAt: true,
       duration: true,
     },
   });
@@ -274,6 +284,8 @@ const superUserGetPrograms = async (req: Request, res: Response) => {
       type: true,
       field: true,
       duration: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -317,6 +329,8 @@ const getProgram = async (req: Request, res: Response) => {
       description: true,
       type: true,
       field: true,
+      createdAt: true,
+      updatedAt: true,
       duration: true,
     },
   });
@@ -350,6 +364,8 @@ const superUserGetProgram = async (req: Request, res: Response) => {
       type: true,
       field: true,
       duration: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {

@@ -107,6 +107,8 @@ const createSchool = async (req: Request, res: Response) => {
         phoneNumber: true,
         website: true,
         visits: true,
+        createdAt: true,
+        updatedAt: true,
         isDeleted: true,
         creator: {
           select: {
@@ -202,6 +204,8 @@ const addImages = async (req: Request, res: Response) => {
       website: true,
       pictures: true,
       visits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -294,6 +298,8 @@ const deleteImage = async (req: Request, res: Response) => {
       website: true,
       pictures: true,
       visits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -375,6 +381,8 @@ const updateSchool = async (req: Request, res: Response) => {
       phoneNumber: true,
       website: true,
       visits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -423,6 +431,8 @@ const deleteSchool = async (req: Request, res: Response) => {
       phoneNumber: true,
       website: true,
       visits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -471,6 +481,8 @@ const restoreSchool = async (req: Request, res: Response) => {
       phoneNumber: true,
       website: true,
       visits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -520,6 +532,8 @@ const visitSchool = async (req: Request, res: Response) => {
       website: true,
       pictures: true,
       visits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -556,6 +570,8 @@ const superUserSeeSchool = async (req: Request, res: Response) => {
       pictures: true,
       visits: true,
       isDeleted: true,
+      createdAt: true,
+      updatedAt: true,
       rating: true,
       creator: {
         select: {
@@ -585,49 +601,6 @@ const superUserSeeSchool = async (req: Request, res: Response) => {
 };
 
 const seeSchool = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const school = await prisma.school.findUnique({
-    where: {
-      id,
-      isDeleted: false,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      type: true,
-      longitude: true,
-      latitude: true,
-      country: true,
-      city: true,
-      email: true,
-      phoneNumber: true,
-      website: true,
-      pictures: true,
-      visits: true,
-      rating: true,
-    },
-  });
-
-  if (!school) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "School does not exist");
-    return;
-  }
-
-  const awsHelper = new AwsS3Helper();
-
-  const schoolImages = await Promise.all(
-    school.pictures.map(async (picture) => {
-      const url = await awsHelper.getImageUrl(picture);
-      return { url, key: picture };
-    })
-  );
-
-  OrchestrationResult.item(res, { ...school, imagesUrls: schoolImages }, 200);
-};
-
-const seeSchoolWithGeolocalization = async (req: Request, res: Response) => {
   const { id } = req.params;
   const longitude = req.query.longitude
     ? String(sanitizeInput(req.query.longitude as string))
@@ -659,63 +632,114 @@ const seeSchoolWithGeolocalization = async (req: Request, res: Response) => {
       );
       return;
     }
-  }
 
-  const prismaWithGeolocation = prisma.$extends({
-    result: {
-      school: {
-        distance: {
-          needs: { latitude: true, longitude: true },
-          compute(school) {
-            return haversineDistance(
-              { latitude: Number(latitude), longitude: Number(longitude) },
-              { latitude: school.latitude, longitude: school.longitude }
-            );
+    const prismaWithGeolocation = prisma.$extends({
+      result: {
+        school: {
+          distance: {
+            needs: { latitude: true, longitude: true },
+            compute(school) {
+              return haversineDistance(
+                { latitude: Number(latitude), longitude: Number(longitude) },
+                { latitude: school.latitude, longitude: school.longitude }
+              );
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  const school = await prismaWithGeolocation.school.findUnique({
-    where: {
-      id,
-      isDeleted: false,
-    },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      type: true,
-      longitude: true,
-      latitude: true,
-      country: true,
-      city: true,
-      email: true,
-      phoneNumber: true,
-      website: true,
-      pictures: true,
-      visits: true,
-      distance: true,
-      rating: true,
-    },
-  });
+    const school = await prismaWithGeolocation.school.findUnique({
+      where: {
+        id,
+        isDeleted: false,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        type: true,
+        longitude: true,
+        latitude: true,
+        country: true,
+        city: true,
+        email: true,
+        phoneNumber: true,
+        website: true,
+        pictures: true,
+        visits: true,
+        distance: true,
+        createdAt: true,
+        updatedAt: true,
+        rating: true,
+      },
+    });
 
-  if (!school) {
-    OrchestrationResult.notFound(res, CODES.NOT_FOUND, "School does not exist");
-    return;
+    if (!school) {
+      OrchestrationResult.notFound(
+        res,
+        CODES.NOT_FOUND,
+        "School does not exist"
+      );
+      return;
+    }
+
+    const awsHelper = new AwsS3Helper();
+
+    const schoolImages = await Promise.all(
+      school.pictures.map(async (picture) => {
+        const url = await awsHelper.getImageUrl(picture);
+        return { url, key: picture };
+      })
+    );
+
+    OrchestrationResult.item(res, { ...school, imagesUrls: schoolImages }, 200);
+  } else {
+    const school = await prisma.school.findUnique({
+      where: {
+        id,
+        isDeleted: false,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        type: true,
+        longitude: true,
+        latitude: true,
+        country: true,
+        city: true,
+        email: true,
+        phoneNumber: true,
+        website: true,
+        pictures: true,
+        visits: true,
+        createdAt: true,
+        updatedAt: true,
+        rating: true,
+      },
+    });
+
+    if (!school) {
+      OrchestrationResult.notFound(
+        res,
+        CODES.NOT_FOUND,
+        "School does not exist"
+      );
+      return;
+    }
+
+    const awsHelper = new AwsS3Helper();
+
+    const schoolImages = await Promise.all(
+      school.pictures.map(async (picture) => {
+        const url = await awsHelper.getImageUrl(picture);
+        return { url, key: picture };
+      })
+    );
+
+    OrchestrationResult.item(res, { ...school, imagesUrls: schoolImages }, 200);
   }
-
-  const awsHelper = new AwsS3Helper();
-
-  const schoolImages = await Promise.all(
-    school.pictures.map(async (picture) => {
-      const url = await awsHelper.getImageUrl(picture);
-      return { url, key: picture };
-    })
-  );
-
-  OrchestrationResult.item(res, { ...school, imagesUrls: schoolImages }, 200);
 };
 
 const superUserSeeSchools = async (req: Request, res: Response) => {
@@ -779,6 +803,8 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
       website: true,
       visits: true,
       rating: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -899,7 +925,9 @@ const searchSchools = async (req: Request, res: Response) => {
       s.country AS schoolCountry,
       s.city AS schoolCity,
       s.email AS schoolEmail,
-      'phone-number' AS schoolPhoneNumber,
+      s."phoneNumber" AS schoolPhoneNumber,
+      s."createdAt" AS schoolCreatedAt,
+      s."updatedAt" AS schoolUpdatedAt,
       s.website AS schoolWebsite,
       s.visits AS schoolVisits,
       s.rating AS schoolRating
@@ -975,8 +1003,6 @@ const searchSchools = async (req: Request, res: Response) => {
     LIMIT ${itemsPerPage} OFFSET ${skip}
   `;
 
-  console.log(query);
-
   // Postgres count query
   const countQuery = `
   SELECT
@@ -1046,6 +1072,8 @@ const searchSchools = async (req: Request, res: Response) => {
       website: school.schoolwebsite,
       visits: school.schoolvisits,
       rating: school.schoolrating,
+      createdAt: school.schoolcreatedat,
+      updatedAt: school.schoolupdatedat,
       distance: school.schooldistance || undefined,
       programs: school.programnames
         ? school.programnames.split(", ")
@@ -1063,166 +1091,6 @@ const searchSchools = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, formattedSchools, count, itemsPerPage, page);
 };
 
-// const searchSchools = async (req: Request, res: Response) => {
-//   const { name, itemsPerPage, page, skip } =
-//     getNameAndPageAndItemsPerPageFromRequestQuery(req);
-
-//   const programId = req.query.programId
-//     ? String(sanitizeInput(req.query.programId as string))
-//     : "";
-
-//   const city = req.query.city
-//     ? String(sanitizeInput(req.query.city as string))
-//     : "";
-//   const country = req.query.country
-//     ? String(sanitizeInput(req.query.country as string))
-//     : "";
-//   let type = req.query.type
-//     ? String(sanitizeInput(req.query.type as string))
-//     : "";
-
-//   const longitude = req.query.longitude
-//     ? String(sanitizeInput(req.query.longitude as string))
-//     : "";
-//   const latitude = req.query.latitude
-//     ? String(sanitizeInput(req.query.latitude as string))
-//     : "";
-
-//   const orderByVisits =
-//     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
-//       ? (String(req.query.orderByVisits) as "asc" | "desc")
-//       : "desc";
-
-//   const orderByRating =
-//     req.query.orderByRating === "asc" || req.query.orderByRating === "desc"
-//       ? (String(req.query.orderByRating) as "asc" | "desc")
-//       : "desc";
-
-//   const orderByDistance =
-//     req.query.orderByDistance === "asc" || req.query.orderByDistance === "desc"
-//       ? (String(req.query.orderByDistance) as "asc" | "desc")
-//       : "asc";
-
-//   if (type) {
-//     OrchestrationResult.badRequest(
-//       res,
-//       CODES.VALIDATION_REQUEST_ERROR,
-//       "Provide a correct type"
-//     );
-//     return;
-//   }
-
-//   if (longitude || latitude) {
-//     if (!isNumeric(latitude) || !isNumeric(longitude)) {
-//       OrchestrationResult.badRequest(
-//         res,
-//         CODES.VALIDATION_REQUEST_ERROR,
-//         "Provide a correct longitude and latitude"
-//       );
-//       return;
-//     }
-
-//     if (
-//       Number(latitude) < -90 ||
-//       Number(latitude) > 90 ||
-//       Number(longitude) < -180 ||
-//       Number(longitude) > 180
-//     ) {
-//       OrchestrationResult.badRequest(
-//         res,
-//         CODES.VALIDATION_REQUEST_ERROR,
-//         "Provide a correct longitude and latitude"
-//       );
-//       return;
-//     }
-//   }
-
-//   const query = `
-//       SELECT
-//         s.id AS schoolId,
-//         s.name AS schoolName,
-//         s.description AS schoolDescription,
-//         s.type AS schoolType,
-//         s.longitude AS schoolLongitude,
-//         s.latitude AS schoolLatitude,
-//         s.country AS schoolCountry,
-//         s.city AS schoolCity,
-//         s.email AS schoolEmail,
-//         'phone-number' AS schoolPhoneNumber,
-//         s.website AS schoolWebsite,
-//         s.visits AS schoolVisits,
-//         s.rating AS schoolRating
-//         ${programId && `,p.name AS programName`}
-//         ${
-//           longitude &&
-//           latitude &&
-//           `,(6371 * acos(cos(radians(${Number(
-//             latitude
-//           )})) * cos(radians(s.latitude)) *
-//           cos(radians(s.longitude) - radians(${Number(longitude)})) +
-//           sin(radians(${Number(
-//             latitude
-//           )})) * sin(radians(s.latitude)))) AS schoolDistance`
-//         }
-//       FROM "School" AS s
-//       ${
-//         programId &&
-//         ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId"
-//           INNER JOIN "Program" as p ON sp."programId" = p."id"
-//         `
-//       }
-//       WHERE
-//         s.name ILIKE '%${name}%' AND
-//         s.country ILIKE '%${country}%' AND
-//         s.city ILIKE '%${city}%' AND
-//         ${type && `s.type = '${type}' AND`}
-//         ${programId && `p.id = '${programId}' AND`}
-//         s."isDeleted" = false AND
-//         sp."isDeleted" = false
-//       ORDER BY
-//         ${longitude && latitude && `schoolDistance ${orderByDistance},`}
-//         schoolRating ${orderByRating},
-//         schoolVisits ${orderByVisits}
-//       LIMIT ${itemsPerPage} OFFSET ${skip}
-//   `;
-
-//   console.log(query);
-
-//   // const countQuery = `
-//   //     SELECT
-//   //       COUNT(s.id)
-//   //       ${
-//   //         longitude &&
-//   //         latitude &&
-//   //         `,(6371 * acos(cos(radians(${Number(
-//   //           latitude
-//   //         )})) * cos(radians(s.latitude)) *
-//   //         cos(radians(s.longitude) - radians(${Number(longitude)})) +
-//   //         sin(radians(${Number(
-//   //           latitude
-//   //         )})) * sin(radians(s.latitude)))) AS distance`
-//   //       }
-//   //     FROM "School" AS s
-//   //     WHERE
-//   //       s.name ILIKE '%${name}%' AND
-//   //       s.country ILIKE '%${country}%' AND
-//   //       s.city ILIKE '%${city}%' AND
-//   //       ${type && `s.type = '${type}' AND`}
-//   //       s."isDeleted" = false
-//   //     GROUP BY
-//   //       s.latitude, s.longitude
-//   // `;
-
-//   const schoolPrograms = await prisma.$queryRawUnsafe<SchoolProgram[]>(query);
-//   // const countData = await prisma.$queryRawUnsafe<{ count: number }[]>(
-//   //   countQuery
-//   // );
-//   // const count = Number(countData[0].count);
-
-//   // OrchestrationResult.list(res, schools, count, itemsPerPage, page);
-//   res.send(schoolPrograms);
-// };
-
 export default {
   createSchool,
   addImages,
@@ -1235,5 +1103,4 @@ export default {
   seeSchool,
   superUserSeeSchools,
   searchSchools,
-  seeSchoolWithGeolocalization,
 };

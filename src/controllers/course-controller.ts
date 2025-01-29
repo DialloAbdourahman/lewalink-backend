@@ -21,6 +21,8 @@ const createCourse = async (req: Request, res: Response) => {
       title: true,
       description: true,
       credits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -71,6 +73,8 @@ const updateCourse = async (req: Request, res: Response) => {
       title: true,
       description: true,
       credits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -117,6 +121,8 @@ const deleteCourse = async (req: Request, res: Response) => {
       title: true,
       description: true,
       credits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -163,6 +169,8 @@ const restoreCourse = async (req: Request, res: Response) => {
       title: true,
       description: true,
       credits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -200,6 +208,8 @@ const getCourses = async (req: Request, res: Response) => {
       code: true,
       title: true,
       description: true,
+      createdAt: true,
+      updatedAt: true,
       credits: true,
     },
   });
@@ -239,6 +249,8 @@ const superUserGetCourses = async (req: Request, res: Response) => {
       title: true,
       description: true,
       credits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {
@@ -280,6 +292,8 @@ const getCourse = async (req: Request, res: Response) => {
       code: true,
       title: true,
       description: true,
+      createdAt: true,
+      updatedAt: true,
       credits: true,
     },
   });
@@ -312,6 +326,8 @@ const superUserGetCourse = async (req: Request, res: Response) => {
       title: true,
       description: true,
       credits: true,
+      createdAt: true,
+      updatedAt: true,
       isDeleted: true,
       creator: {
         select: {

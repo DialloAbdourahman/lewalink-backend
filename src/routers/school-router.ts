@@ -56,11 +56,6 @@ router.get(
   schoolController.superUserSeeSchool
 );
 
-router.get(
-  "/geolocalization/:id",
-  schoolController.seeSchoolWithGeolocalization
-);
-
 router.get("/search", schoolController.searchSchools);
 
 router.get("/:id", schoolController.seeSchool);

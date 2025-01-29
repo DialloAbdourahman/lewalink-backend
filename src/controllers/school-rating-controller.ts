@@ -63,6 +63,8 @@ const createSchoolRating = async (req: Request, res: Response) => {
         },
       },
       schoolId: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 
@@ -149,6 +151,8 @@ const updateSchoolRating = async (req: Request, res: Response) => {
           name: true,
         },
       },
+      createdAt: true,
+      updatedAt: true,
       schoolId: true,
     },
   });
@@ -225,6 +229,8 @@ const deleteSchoolRating = async (req: Request, res: Response) => {
           name: true,
         },
       },
+      createdAt: true,
+      updatedAt: true,
       schoolId: true,
     },
   });
@@ -282,6 +288,8 @@ const getSchoolRatings = async (req: Request, res: Response) => {
           name: true,
         },
       },
+      createdAt: true,
+      updatedAt: true,
       schoolId: true,
     },
   });
