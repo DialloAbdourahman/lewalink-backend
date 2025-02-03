@@ -559,6 +559,15 @@ const seeUsers = async (req: Request, res: Response) => {
       name: true,
       email: true,
       type: true,
+      createdAt: true,
+      updatedAt: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
     },
   });
   const count = await prisma.user.count({
@@ -770,7 +779,7 @@ const createAdmin = async (req: Request, res: Response) => {
       name,
       password,
       type: UserType.Admin,
-      adminId: req.currentUser?.id,
+      creatorId: req.currentUser?.id,
     },
   });
 
@@ -849,7 +858,7 @@ const createEditor = async (req: Request, res: Response) => {
       name,
       password,
       type: UserType.Editor,
-      adminId: req.currentUser?.id,
+      creatorId: req.currentUser?.id,
     },
   });
 

@@ -65,7 +65,6 @@ const createSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      visits: true,
       school: {
         select: {
           id: true,
@@ -133,7 +132,6 @@ const updateSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      visits: true,
       school: {
         select: {
           id: true,
@@ -200,7 +198,6 @@ const deleteSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      visits: true,
       school: {
         select: {
           id: true,
@@ -267,7 +264,6 @@ const restoreSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      visits: true,
       school: {
         select: {
           id: true,

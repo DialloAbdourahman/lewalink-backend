@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "School" ADD COLUMN     "rating" DOUBLE PRECISION NOT NULL DEFAULT 0;

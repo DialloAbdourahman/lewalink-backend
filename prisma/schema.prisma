@@ -42,8 +42,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  admin   User?   @relation("UserAdmin", fields: [adminId], references: [id])
-  adminId String?
+  creator   User?   @relation("UserAdmin", fields: [creatorId], references: [id])
+  creatorId String?
 
   schoolsCreated        School[]
   programsCreated       Program[]
