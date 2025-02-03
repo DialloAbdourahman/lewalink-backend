@@ -52,6 +52,10 @@ model User {
   coursesCreated        Course[]
   programCourses        ProgramCourse[]
   usersCreated          User[]          @relation("UserAdmin")
+
+  @@index([token])
+  @@index([name, type])
+  @@index([isDeleted, type])
 }
 
 model School {
@@ -78,11 +82,19 @@ model School {
 
   schoolPrograms SchoolProgram[]
   schoolRatings  SchoolRating[]
+
+  @@index([isDeleted, type])
+  @@index([name])
+  @@index([country])
+  @@index([city])
+  @@index([rating])
+  @@index([visits])
+  @@index([longitude, latitude])
 }
 
 model Program {
   id          String       @id @default(uuid())
-  name        String
+  name        String       @unique
   description String
   type        ProgramType
   field       ProgramField
@@ -95,12 +107,16 @@ model Program {
 
   schoolPrograms SchoolProgram[]
   programCourses ProgramCourse[]
+
+  @@index([isDeleted])
+  @@index([name])
+  @@index([field])
+  @@index([type])
 }
 
 model SchoolProgram {
   id        String   @id @default(uuid())
   price     Float?
-  visits    Int      @default(0)
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -113,11 +129,16 @@ model SchoolProgram {
 
   program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
   programId String
+
+  @@index([schoolId, isDeleted])
+  @@index([programId, isDeleted])
+  @@index([price])
+  @@index([schoolId, programId])
 }
 
 model Course {
   id          String   @id @default(uuid())
-  code        String
+  code        String   @unique
   title       String
   description String
   credits     Int
@@ -129,6 +150,10 @@ model Course {
   creatorId String
 
   programCourses ProgramCourse[]
+
+  @@index([title, isDeleted])
+  @@index([credits])
+  @@index([title])
 }
 
 model ProgramCourse {
@@ -145,6 +170,10 @@ model ProgramCourse {
 
   program   Program @relation(fields: [programId], references: [id])
   programId String
+
+  @@index([courseId, isDeleted])
+  @@index([programId, isDeleted])
+  @@index([courseId, programId])
 }
 
 model SchoolRating {
@@ -160,9 +189,13 @@ model SchoolRating {
 
   school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   schoolId String
+
+  @@index([schoolId, isDeleted])
+  @@index([schoolId, clientId, isDeleted])
 }
 
 // FURTURE CHANGES
+
 // Try to add indexes to relevant fields like email to fasten searches. 
 // Think about order by price (should it be second, third, etc etc).
 // Think on adding the currency on the school-program table.
