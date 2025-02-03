@@ -12,6 +12,7 @@ import { programRouter } from "./routers/program-router";
 import { schoolRouter } from "./routers/school-router";
 import { schoolRatingRouter } from "./routers/school-rating-router";
 import { schoolProgramRouter } from "./routers/school-program-router";
+import { programCourseRouter } from "./routers/program-course-router";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/program/v1", programRouter);
 app.use("/api/school/v1", schoolRouter);
 app.use("/api/school-rating/v1", schoolRatingRouter);
 app.use("/api/school-program/v1", schoolProgramRouter);
+app.use("/api/program-course/v1", programCourseRouter);
 
 app.use("*", (req: Request, res: Response) => {
   OrchestrationResult.notFound(

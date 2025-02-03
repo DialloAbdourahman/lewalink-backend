@@ -148,6 +148,12 @@ export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
   validateRequest,
 ];
 
+export const validateCreateProgramCourse: ValidatorMiddleware[] = [
+  body("courseId").exists().withMessage("Provide a course id"),
+  body("programId").exists().withMessage("Provide a program id"),
+  validateRequest,
+];
+
 export const validateUpdateSchoolProgram: ValidatorMiddleware[] = [
   body("price").isFloat().withMessage("Provide a correct price"),
   validateRequest,

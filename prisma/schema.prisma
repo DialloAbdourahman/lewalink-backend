@@ -50,6 +50,7 @@ model User {
   schoolProgramsCreated SchoolProgram[]
   schoolRatings         SchoolRating[]
   coursesCreated        Course[]
+  programCourses        ProgramCourse[]
   usersCreated          User[]          @relation("UserAdmin")
 }
 
@@ -93,6 +94,7 @@ model Program {
   updatedAt   DateTime     @updatedAt
 
   schoolPrograms SchoolProgram[]
+  programCourses ProgramCourse[]
 }
 
 model SchoolProgram {
@@ -111,8 +113,6 @@ model SchoolProgram {
 
   program   Program @relation(fields: [programId], references: [id], onDelete: Cascade)
   programId String
-
-  schoolProgramCourses SchoolProgramCourse[]
 }
 
 model Course {
@@ -128,19 +128,23 @@ model Course {
   creator   User   @relation(fields: [creatorId], references: [id])
   creatorId String
 
-  schoolProgramCourses SchoolProgramCourse[]
+  programCourses ProgramCourse[]
 }
 
-model SchoolProgramCourse {
+model ProgramCourse {
   id        String   @id @default(uuid())
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  course          Course        @relation(fields: [courseId], references: [id])
-  courseId        String
-  schoolProgram   SchoolProgram @relation(fields: [schoolProgramId], references: [id])
-  schoolProgramId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+  creatorId String
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
+
+  program   Program @relation(fields: [programId], references: [id])
+  programId String
 }
 
 model SchoolRating {
@@ -158,12 +162,8 @@ model SchoolRating {
   schoolId String
 }
 
-// CURRENT CHANGES
-// Add relevant data to the db to test out stuff. 
-// Super use also see schoolprograms, just copy and paste getSchoolPrograms and remove the delete stuff and include the creator.
-// Continue on school program course router and controller. 
-
 // FURTURE CHANGES
+// Try to add indexes to relevant fields like email to fasten searches. 
 // Think about order by price (should it be second, third, etc etc).
 // Think on adding the currency on the school-program table.
 // Think on having a single search where the user can have only one search bar and can enter the program name or the school name. 

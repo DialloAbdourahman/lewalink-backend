@@ -518,31 +518,6 @@ const visitSchool = async (req: Request, res: Response) => {
     data: {
       visits: ++school.visits,
     },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      type: true,
-      longitude: true,
-      latitude: true,
-      country: true,
-      city: true,
-      email: true,
-      phoneNumber: true,
-      website: true,
-      pictures: true,
-      visits: true,
-      createdAt: true,
-      updatedAt: true,
-      isDeleted: true,
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-        },
-      },
-    },
   });
 
   OrchestrationResult.success(res);

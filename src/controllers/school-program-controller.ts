@@ -70,12 +70,20 @@ const createSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
-          createdAt: true,
-          updatedAt: true,
+          isDeleted: true,
         },
       },
       program: {
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          type: true,
+          field: true,
+          duration: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       },
       createdAt: true,
       updatedAt: true,
@@ -107,10 +115,10 @@ const updateSchoolProgram = async (req: Request, res: Response) => {
   });
 
   if (!existingSchoolProgram) {
-    OrchestrationResult.badRequest(
+    OrchestrationResult.notFound(
       res,
-      CODES.SCHOOL_DOES_NOT_EXIST,
-      "School does not exist"
+      CODES.SCHOOL_PROGRAM_DOES_NOT_EXIST,
+      "School program does not exist"
     );
     return;
   }
@@ -130,12 +138,20 @@ const updateSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
-          createdAt: true,
-          updatedAt: true,
+          isDeleted: true,
         },
       },
       program: {
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          type: true,
+          field: true,
+          duration: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       },
       createdAt: true,
       updatedAt: true,
@@ -166,15 +182,15 @@ const deleteSchoolProgram = async (req: Request, res: Response) => {
   });
 
   if (!existingSchoolProgram) {
-    OrchestrationResult.badRequest(
+    OrchestrationResult.notFound(
       res,
-      CODES.SCHOOL_DOES_NOT_EXIST,
-      "School does not exist"
+      CODES.SCHOOL_PROGRAM_DOES_NOT_EXIST,
+      "School program does not exist"
     );
     return;
   }
 
-  await prisma.schoolProgram.update({
+  const schoolProgram = await prisma.schoolProgram.update({
     where: {
       id: existingSchoolProgram.id,
     },
@@ -189,12 +205,20 @@ const deleteSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
-          createdAt: true,
-          updatedAt: true,
+          isDeleted: true,
         },
       },
       program: {
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          type: true,
+          field: true,
+          duration: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       },
       createdAt: true,
       updatedAt: true,
@@ -211,7 +235,7 @@ const deleteSchoolProgram = async (req: Request, res: Response) => {
     },
   });
 
-  OrchestrationResult.success(res);
+  OrchestrationResult.item(res, schoolProgram);
 };
 
 const restoreSchoolProgram = async (req: Request, res: Response) => {
@@ -225,10 +249,10 @@ const restoreSchoolProgram = async (req: Request, res: Response) => {
   });
 
   if (!existingSchoolProgram) {
-    OrchestrationResult.badRequest(
+    OrchestrationResult.notFound(
       res,
-      CODES.SCHOOL_DOES_NOT_EXIST,
-      "School does not exist"
+      CODES.SCHOOL_PROGRAM_DOES_NOT_EXIST,
+      "School program does not exist"
     );
     return;
   }
@@ -248,12 +272,20 @@ const restoreSchoolProgram = async (req: Request, res: Response) => {
         select: {
           id: true,
           name: true,
-          createdAt: true,
-          updatedAt: true,
+          isDeleted: true,
         },
       },
       program: {
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          type: true,
+          field: true,
+          duration: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       },
       createdAt: true,
       updatedAt: true,
@@ -273,63 +305,6 @@ const restoreSchoolProgram = async (req: Request, res: Response) => {
   OrchestrationResult.item(res, restoredSchoolProgram);
 };
 
-const visitSchoolProgram = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const existingSchoolProgram = await prisma.schoolProgram.findUnique({
-    where: {
-      id,
-      isDeleted: false,
-    },
-  });
-
-  if (!existingSchoolProgram) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.SCHOOL_DOES_NOT_EXIST,
-      "School does not exist"
-    );
-    return;
-  }
-
-  const visitedSchoolProgram = await prisma.schoolProgram.update({
-    where: {
-      id: existingSchoolProgram.id,
-    },
-    data: {
-      visits: ++existingSchoolProgram.visits,
-    },
-    select: {
-      id: true,
-      price: true,
-      visits: true,
-      school: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      program: {
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
-      },
-      createdAt: true,
-      updatedAt: true,
-      isDeleted: true,
-      creator: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
-  });
-
-  OrchestrationResult.item(res, visitedSchoolProgram);
-};
-
 const getSchoolPrograms = async (req: Request, res: Response) => {
   const { schoolId } = req.params;
   const { itemsPerPage, page, skip } =
@@ -341,11 +316,20 @@ const getSchoolPrograms = async (req: Request, res: Response) => {
       program: {
         isDeleted: false,
       },
+      school: {
+        isDeleted: false,
+      },
       isDeleted: false,
     },
     skip: skip,
     take: itemsPerPage,
     select: {
+      school: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       program: {
         select: {
           id: true,
@@ -360,7 +344,6 @@ const getSchoolPrograms = async (req: Request, res: Response) => {
       },
       createdAt: true,
       updatedAt: true,
-      isDeleted: false,
     },
   });
 
@@ -377,25 +360,46 @@ const getSchoolPrograms = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, schoolPrograms, count, itemsPerPage, page);
 };
 
-const superUserSeeSchoolProgram = async (req: Request, res: Response) => {
-  const { id } = req.params;
+const superUserGetSchoolPrograms = async (req: Request, res: Response) => {
+  const { schoolId } = req.params;
+  const { itemsPerPage, page, skip } =
+    getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
-  const schoolProgram = await prisma.schoolProgram.findUnique({
+  const schoolPrograms = await prisma.schoolProgram.findMany({
     where: {
-      id,
+      schoolId,
     },
+    skip: skip,
+    take: itemsPerPage,
     select: {
-      id: true,
-      price: true,
-      visits: true,
       school: {
         select: {
           id: true,
           name: true,
+          isDeleted: true,
         },
       },
       program: {
-        select: { id: true, name: true, createdAt: true, updatedAt: true },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          type: true,
+          field: true,
+          duration: true,
+          createdAt: true,
+          updatedAt: true,
+          isDeleted: true,
+          creator: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
       },
       createdAt: true,
       updatedAt: true,
@@ -412,66 +416,17 @@ const superUserSeeSchoolProgram = async (req: Request, res: Response) => {
     },
   });
 
-  if (!schoolProgram) {
-    OrchestrationResult.notFound(
-      res,
-      CODES.NOT_FOUND,
-      "School program does not exist"
-    );
-    return;
-  }
-
-  OrchestrationResult.item(res, schoolProgram);
-};
-
-const SeeSchoolProgram = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const schoolProgram = await prisma.schoolProgram.findUnique({
+  const count = await prisma.schoolProgram.count({
     where: {
-      id,
-      isDeleted: false,
-    },
-    select: {
-      id: true,
-      price: true,
-      visits: true,
-      school: {
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-      createdAt: true,
-      updatedAt: true,
+      schoolId,
       program: {
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          type: true,
-          field: true,
-          duration: true,
-          createdAt: true,
-          updatedAt: true,
-          isDeleted: true,
-        },
+        isDeleted: false,
       },
+      isDeleted: false,
     },
   });
 
-  if (!schoolProgram) {
-    OrchestrationResult.notFound(
-      res,
-      CODES.NOT_FOUND,
-      "School program does not exist"
-    );
-    return;
-  }
-
-  OrchestrationResult.item(res, schoolProgram);
+  OrchestrationResult.list(res, schoolPrograms, count, itemsPerPage, page);
 };
 
 export default {
@@ -479,8 +434,6 @@ export default {
   updateSchoolProgram,
   deleteSchoolProgram,
   restoreSchoolProgram,
-  visitSchoolProgram,
   getSchoolPrograms,
-  superUserSeeSchoolProgram,
-  SeeSchoolProgram,
+  superUserGetSchoolPrograms,
 };

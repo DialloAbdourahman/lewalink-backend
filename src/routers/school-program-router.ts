@@ -42,15 +42,11 @@ router.post(
 
 router.get("/programs/:schoolId", schoolProgramController.getSchoolPrograms);
 
-router.get("/visit/:id", schoolProgramController.visitSchoolProgram);
-
 router.get(
-  "/super-user-see-school-program/:id",
+  "/super-user-get-programs/:schoolId",
   requireAuth,
   verifyRoles([UserType.Admin, UserType.Editor]),
-  schoolProgramController.superUserSeeSchoolProgram
+  schoolProgramController.superUserGetSchoolPrograms
 );
-
-router.get("/:id", schoolProgramController.SeeSchoolProgram);
 
 export { router as schoolProgramRouter };
