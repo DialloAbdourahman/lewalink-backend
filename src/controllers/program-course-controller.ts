@@ -305,7 +305,7 @@ const getProgramCourses = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, programCourses, count, itemsPerPage, page);
 };
 
-const superUserGetSchoolPrograms = async (req: Request, res: Response) => {
+const superUserGetsProgramCourses = async (req: Request, res: Response) => {
   const { programId } = req.params;
   const { itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
@@ -377,5 +377,5 @@ export default {
   deleteProgramCourse,
   restoreProgramCourse,
   getProgramCourses,
-  superUserGetSchoolPrograms,
+  superUserGetsProgramCourses,
 };

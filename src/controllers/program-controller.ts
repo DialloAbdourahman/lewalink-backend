@@ -68,6 +68,7 @@ const updateProgram = async (req: Request, res: Response) => {
       type,
       description,
       duration,
+      field,
     },
     select: {
       id: true,

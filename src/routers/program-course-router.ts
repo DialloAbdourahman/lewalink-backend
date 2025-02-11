@@ -32,10 +32,10 @@ router.post(
 router.get("/courses/:programId", programCourseController.getProgramCourses);
 
 router.get(
-  "/super-user-get-courses/:schoolId",
+  "/super-user-get-courses/:programId",
   requireAuth,
   verifyRoles([UserType.Admin, UserType.Editor]),
-  programCourseController.superUserGetSchoolPrograms
+  programCourseController.superUserGetsProgramCourses
 );
 
 export { router as programCourseRouter };
