@@ -1,12 +1,12 @@
 import { prisma } from "../prisma";
 
 const emptyDB = async () => {
+  await prisma.programCourse.deleteMany({});
+  await prisma.schoolProgram.deleteMany({});
+  await prisma.schoolRating.deleteMany({});
   await prisma.course.deleteMany({});
   await prisma.program.deleteMany({});
   await prisma.school.deleteMany({});
-  await prisma.schoolProgram.deleteMany({});
-  await prisma.programCourse.deleteMany({});
-  await prisma.schoolRating.deleteMany({});
   await prisma.user.deleteMany({});
 };
 

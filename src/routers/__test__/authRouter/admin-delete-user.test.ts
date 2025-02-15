@@ -9,7 +9,7 @@ it("Should not allow a user to delete another user if he is unauthenticated", as
   const { createdUser } = await loginUser();
 
   const response = await request(app)
-    .delete(`/api/auth/v1/delete/${createdUser.id}`)
+    .delete(`/api/auth/v1/${createdUser.id}`)
     .send();
 
   expect(response.status).toEqual(401);
@@ -25,7 +25,7 @@ it("Should not allow a normal user to delete another user", async () => {
   const { accessToken, createdUser } = await loginUser();
 
   const response = await request(app)
-    .delete(`/api/auth/v1/delete/${createdUser.id}`)
+    .delete(`/api/auth/v1/${createdUser.id}`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
 
@@ -42,7 +42,7 @@ it("Should not allow an editor user to delete another user", async () => {
   const { accessToken, createdUser } = await loginUser(UserType.Editor);
 
   const response = await request(app)
-    .delete(`/api/auth/v1/delete/${createdUser.id}`)
+    .delete(`/api/auth/v1/${createdUser.id}`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
 
@@ -59,7 +59,7 @@ it("Should not allow admin to delete a user that doesn't exist", async () => {
   const { accessToken } = await loginUser(UserType.Admin);
 
   const response = await request(app)
-    .delete(`/api/auth/v1/delete/11`)
+    .delete(`/api/auth/v1/11`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
 
@@ -72,7 +72,7 @@ it("Should allow admin to delete a user", async () => {
   const { accessToken } = await loginUser(UserType.Admin);
 
   const response = await request(app)
-    .delete(`/api/auth/v1/delete/${clientUser.id}`)
+    .delete(`/api/auth/v1/${clientUser.id}`)
     .set("Authorization", `Bearer ${accessToken}`)
     .send();
 
