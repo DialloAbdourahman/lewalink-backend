@@ -32,7 +32,7 @@ router
     "/restore-deleted-user/:id",
     requireAuth,
     verifyRoles([UserType.Admin]),
-    authController.unDeleteUser
+    authController.restoreUser
   ) // TESTED
   .post(
     "/admin-deactivates-account/:id",
@@ -90,7 +90,7 @@ router
     authController.seeUsers
   ) // TESTED
   .delete(
-    "/delete/:id",
+    "/:id",
     requireAuth,
     verifyRoles([UserType.Admin]),
     authController.deleteUser

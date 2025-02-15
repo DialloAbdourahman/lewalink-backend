@@ -561,6 +561,8 @@ const seeUsers = async (req: Request, res: Response) => {
       type: true,
       createdAt: true,
       updatedAt: true,
+      isActive: true,
+      isDeleted: true,
       creator: {
         select: {
           id: true,
@@ -595,6 +597,15 @@ const deleteUser = async (req: Request, res: Response) => {
     return;
   }
 
+  if (id === req.currentUser?.id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.CANNOT_DELETE_YOURSELF,
+      "Cannot delete yourself"
+    );
+    return;
+  }
+
   const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user) {
@@ -602,18 +613,35 @@ const deleteUser = async (req: Request, res: Response) => {
     return;
   }
 
-  await prisma.user.update({
+  const deletedUser = await prisma.user.update({
     where: { id: user.id },
     data: {
       isDeleted: true,
       token: null,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
-  OrchestrationResult.success(res);
+  OrchestrationResult.item(res, deletedUser);
 };
 
-const unDeleteUser = async (req: Request, res: Response) => {
+const restoreUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   if (!id) {
@@ -650,14 +678,31 @@ const unDeleteUser = async (req: Request, res: Response) => {
     }
   }
 
-  await prisma.user.update({
+  const restoredUser = await prisma.user.update({
     where: { id: user.id },
     data: {
       isDeleted: false,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
-  OrchestrationResult.success(res);
+  OrchestrationResult.item(res, restoredUser);
 };
 
 const adminDeactivateAccount = async (req: Request, res: Response) => {
@@ -672,6 +717,15 @@ const adminDeactivateAccount = async (req: Request, res: Response) => {
     return;
   }
 
+  if (id === req.currentUser?.id) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.CANNOT_DEACTIVATE_YOURSELF,
+      "Cannot deactivate yourself"
+    );
+    return;
+  }
+
   const user = await prisma.user.findUnique({ where: { id } });
 
   if (!user) {
@@ -679,15 +733,32 @@ const adminDeactivateAccount = async (req: Request, res: Response) => {
     return;
   }
 
-  await prisma.user.update({
+  const activatedAccount = await prisma.user.update({
     where: { id: user.id },
     data: {
       isActive: false,
       token: null,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
-  OrchestrationResult.success(res);
+  OrchestrationResult.item(res, activatedAccount);
 };
 
 const adminActivateAccount = async (req: Request, res: Response) => {
@@ -709,14 +780,31 @@ const adminActivateAccount = async (req: Request, res: Response) => {
     return;
   }
 
-  await prisma.user.update({
+  const activatedAccount = await prisma.user.update({
     where: { id: user.id },
     data: {
       isActive: true,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
-  OrchestrationResult.success(res);
+  OrchestrationResult.item(res, activatedAccount);
 };
 
 const createAdmin = async (req: Request, res: Response) => {
@@ -781,6 +869,23 @@ const createAdmin = async (req: Request, res: Response) => {
       type: UserType.Admin,
       creatorId: req.currentUser?.id,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
   const { code } = JWTCodes.generate(
@@ -795,7 +900,7 @@ const createAdmin = async (req: Request, res: Response) => {
     code
   );
 
-  OrchestrationResult.success(res, 201);
+  OrchestrationResult.item(res, user, 201);
 };
 
 const createEditor = async (req: Request, res: Response) => {
@@ -860,6 +965,23 @@ const createEditor = async (req: Request, res: Response) => {
       type: UserType.Editor,
       creatorId: req.currentUser?.id,
     },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      type: true,
+      createdAt: true,
+      updatedAt: true,
+      isActive: true,
+      isDeleted: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
   });
 
   const { code } = JWTCodes.generate(
@@ -874,7 +996,7 @@ const createEditor = async (req: Request, res: Response) => {
     code
   );
 
-  OrchestrationResult.success(res, 201);
+  OrchestrationResult.item(res, user, 201);
 };
 
 const oauthGoogle = async (req: Request, res: Response) => {
@@ -1035,7 +1157,7 @@ export default {
   refresh,
   seeUsers,
   deleteUser,
-  unDeleteUser,
+  restoreUser,
   adminActivateAccount,
   adminDeactivateAccount,
   createAdmin,
