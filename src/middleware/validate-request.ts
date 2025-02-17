@@ -29,8 +29,16 @@ export const validateSignup: ValidatorMiddleware[] = [
   body("email").isEmail().withMessage("Email must be valid"),
   body("password")
     .trim()
-    .isLength({ min: 5, max: 20 })
-    .withMessage("Password must be between 5 and 20 characters"),
+    .isLength({ min: 8, max: 32 })
+    .withMessage("Password must be between 8 and 32 characters")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain at least one uppercase letter")
+    .matches(/[a-z]/)
+    .withMessage("Password must contain at least one lowercase letter")
+    .matches(/\d/)
+    .withMessage("Password must contain at least one digit")
+    .matches(/[\W_]/)
+    .withMessage("Password must contain at least one special character"),
   validateRequest,
 ];
 
@@ -58,8 +66,16 @@ export const validateUpdatePassword: ValidatorMiddleware[] = [
 export const validateAddPassword: ValidatorMiddleware[] = [
   body("newPassword")
     .trim()
-    .isLength({ min: 5, max: 20 })
-    .withMessage("Password must be between 5 and 20 characters"),
+    .isLength({ min: 8, max: 32 })
+    .withMessage("Password must be between 8 and 32 characters")
+    .matches(/[A-Z]/)
+    .withMessage("Password must contain at least one uppercase letter")
+    .matches(/[a-z]/)
+    .withMessage("Password must contain at least one lowercase letter")
+    .matches(/\d/)
+    .withMessage("Password must contain at least one digit")
+    .matches(/[\W_]/)
+    .withMessage("Password must contain at least one special character"),
   body("confirmNewPassword")
     .exists()
     .withMessage("Confirm new password must be provided"),
@@ -143,6 +159,7 @@ export const validateCreateSchoolRating: ValidatorMiddleware[] = [
 
 export const validateCreateSchoolProgram: ValidatorMiddleware[] = [
   body("price").isFloat().withMessage("Provide a correct price"),
+  body("currency").isString().withMessage("Provide a correct currency"),
   body("schoolId").exists().withMessage("Provide a school id"),
   body("programId").exists().withMessage("Provide a program id"),
   validateRequest,

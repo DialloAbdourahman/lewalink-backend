@@ -14,20 +14,290 @@ enum UserType {
 }
 
 enum SchoolType {
-  PublicStateUniversity
-  PrivateUniversity
+  PUBLIC_PRIMARY_SCHOOL
+  PRIVATE_PRIMARY_SCHOOL
+  PUBLIC_SECONDARY_SCHOOL
+  PRIVATE_SECONDARY_SCHOOL
+  PUBLIC_STATE_UNIVERSITY
+  PRIVATE_UNIVERSITY
+  INTERNATIONAL_SCHOOL
+  TECHNICAL_SCHOOL
+  VOCATIONAL_SCHOOL
+  COMMUNITY_COLLEGE
+  POLYTECHNIC
+  GRANDE_ECOLE
+  LYCEE_PUBLIC
+  LYCEE_PRIVE
+  COLLEGE_PUBLIC
+  COLLEGE_PRIVE
+  ECOLE_MATERNELLE
+  ECOLE_ELEMENTAIRE
+  UNIVERSITE_PUBLIQUE
+  UNIVERSITE_PRIVEE
+  ECOLE_SUPERIEURE
+  ECOLE_DE_COMMERCE
+  ECOLE_D_INGENIEURS
+  ECOLE_DES_ARTS
 }
 
 enum ProgramType {
+  CERTIFICATE
+  DIPLOMA
+  ASSOCIATE_DEGREE
   HND
   BTECH
   LICENCE
+  LICENCE_PROFESSIONNELLE
+  BACHELORS
+  MASTERS
+  MASTER_PROFESSIONNEL
+  MASTER_RECHERCHE
+  MBA
+  PHD
+  DOCTORAT
+  POSTDOCTORAL
+  POSTDOC
+  PROFESSIONAL_CERTIFICATION
+  CERTIFICATION_PROFESSIONNELLE
+  VOCATIONAL_TRAINING
+  FORMATION_PROFESSIONNELLE
+  ONLINE_COURSE
+  COURS_EN_LIGNE
+  EXECUTIVE_EDUCATION
+  EDUCATION_EXECUTIVE
+  CONTINUING_EDUCATION
+  FORMATION_CONTINUE
+  BTS
+  DUT
+  DEUG
+  DEUST
+  CAP
+  BEP
+  GRANDE_ECOLE
+  CLASSE_PREPA
+  CPGE
 }
 
 enum ProgramField {
   SCIENCE
   TECHNOLOGY
+  ENGINEERING
+  MATHEMATICS
+  MEDICINE
   HEALTH
+  LAW
+  BUSINESS
+  ECONOMICS
+  EDUCATION
+  PSYCHOLOGY
+  SOCIOLOGY
+  POLITICAL_SCIENCE
+  PHILOSOPHY
+  HISTORY
+  LITERATURE
+  LINGUISTICS
+  ART
+  MUSIC
+  THEATER
+  FILM
+  DESIGN
+  ARCHITECTURE
+  AGRICULTURE
+  ENVIRONMENTAL_SCIENCE
+  ASTRONOMY
+  CHEMISTRY
+  PHYSICS
+  BIOLOGY
+  BIOTECHNOLOGY
+  DATA_SCIENCE
+  COMPUTER_SCIENCE
+  ARTIFICIAL_INTELLIGENCE
+  ROBOTICS
+  CYBERSECURITY
+  INFORMATION_TECHNOLOGY
+  SOFTWARE_ENGINEERING
+  NETWORK_ENGINEERING
+  CLOUD_COMPUTING
+  DIGITAL_MARKETING
+  JOURNALISM
+  COMMUNICATIONS
+  PUBLIC_RELATIONS
+  ANTHROPOLOGY
+  GEOGRAPHY
+  URBAN_PLANNING
+  SOCIAL_WORK
+  RELIGIOUS_STUDIES
+  SPORTS_SCIENCE
+  NUTRITION
+  GENETICS
+  NEUROSCIENCE
+  MARINE_BIOLOGY
+  FORENSIC_SCIENCE
+}
+
+enum Currency {
+  AED
+  AFN
+  ALL
+  AMD
+  ANG
+  AOA
+  ARS
+  AUD
+  AWG
+  AZN
+  BAM
+  BBD
+  BDT
+  BGN
+  BHD
+  BIF
+  BMD
+  BND
+  BOB
+  BRL
+  BSD
+  BTN
+  BWP
+  BYN
+  BZD
+  CAD
+  CDF
+  CHF
+  CLP
+  CNY
+  COP
+  CRC
+  CUP
+  CVE
+  CZK
+  DJF
+  DKK
+  DOP
+  DZD
+  EGP
+  ERN
+  ETB
+  EUR
+  FJD
+  FKP
+  FOK
+  GBP
+  GEL
+  GGP
+  GHS
+  GIP
+  GMD
+  GNF
+  GTQ
+  GYD
+  HKD
+  HNL
+  HRK
+  HTG
+  HUF
+  IDR
+  ILS
+  IMP
+  INR
+  IQD
+  IRR
+  ISK
+  JEP
+  JMD
+  JOD
+  JPY
+  KES
+  KGS
+  KHR
+  KID
+  KMF
+  KRW
+  KWD
+  KYD
+  KZT
+  LAK
+  LBP
+  LKR
+  LRD
+  LSL
+  LYD
+  MAD
+  MDL
+  MGA
+  MKD
+  MMK
+  MNT
+  MOP
+  MRU
+  MUR
+  MVR
+  MWK
+  MXN
+  MYR
+  MZN
+  NAD
+  NGN
+  NIO
+  NOK
+  NPR
+  NZD
+  OMR
+  PAB
+  PEN
+  PGK
+  PHP
+  PKR
+  PLN
+  PYG
+  QAR
+  RON
+  RSD
+  RUB
+  RWF
+  SAR
+  SBD
+  SCR
+  SDG
+  SEK
+  SGD
+  SHP
+  SLE
+  SLL
+  SOS
+  SRD
+  SSP
+  STN
+  SYP
+  SZL
+  THB
+  TJS
+  TMT
+  TND
+  TOP
+  TRY
+  TTD
+  TVD
+  TWD
+  TZS
+  UAH
+  UGX
+  USD
+  UYU
+  UZS
+  VES
+  VND
+  VUV
+  WST
+  XAF
+  XCD
+  XDR
+  XOF
+  XPF
+  YER
+  ZAR
+  ZMW
+  ZWL
 }
 
 model User {
@@ -94,7 +364,7 @@ model School {
 
 model Program {
   id          String       @id @default(uuid())
-  name        String       @unique
+  name        String
   description String
   type        ProgramType
   field       ProgramField
@@ -116,7 +386,8 @@ model Program {
 
 model SchoolProgram {
   id        String   @id @default(uuid())
-  price     Float?
+  price     Float
+  currency  Currency
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -138,10 +409,10 @@ model SchoolProgram {
 
 model Course {
   id          String   @id @default(uuid())
-  code        String   @unique
+  code        String
   title       String
   description String
-  credits     Int
+  credits     Int?
   isDeleted   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -196,7 +467,5 @@ model SchoolRating {
 
 // FURTURE CHANGES
 
-// Try to add indexes to relevant fields like email to fasten searches. 
 // Think about order by price (should it be second, third, etc etc).
-// Think on adding the currency on the school-program table.
 // Think on having a single search where the user can have only one search bar and can enter the program name or the school name. 

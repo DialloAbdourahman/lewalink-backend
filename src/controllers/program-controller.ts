@@ -7,6 +7,19 @@ import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name
 const createProgram = async (req: Request, res: Response) => {
   let { type, name, description, duration, field } = req.body;
 
+  const existingProgram = await prisma.program.findFirst({
+    where: { name, type, duration, field },
+  });
+
+  if (existingProgram) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.PROGRAM_EXISTS_ALREADY,
+      "Program exists already"
+    );
+    return;
+  }
+
   const program = await prisma.program.create({
     data: {
       name,

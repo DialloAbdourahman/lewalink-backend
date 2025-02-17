@@ -1,0 +1,121 @@
+/*
+  Warnings:
+
+  - The values [PublicStateUniversity,PrivateUniversity,PublicPrimarySchool,PrivatePrimarySchool,PublicSecondarySchool,PrivateSecondarySchool] on the enum `SchoolType` will be removed. If these variants are still used in the database, this will fail.
+
+*/
+-- CreateEnum
+CREATE TYPE "Currency" AS ENUM ('AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL', 'BSD', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLP', 'CNY', 'COP', 'CRC', 'CUP', 'CVE', 'CZK', 'DJF', 'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'FOK', 'GBP', 'GEL', 'GGP', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL', 'HRK', 'HTG', 'HUF', 'IDR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISK', 'JEP', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KID', 'KMF', 'KRW', 'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD', 'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK', 'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR', 'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD', 'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLE', 'SLL', 'SOS', 'SRD', 'SSP', 'STN', 'SYP', 'SZL', 'THB', 'TJS', 'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TVD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD', 'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XCD', 'XDR', 'XOF', 'XPF', 'YER', 'ZAR', 'ZMW', 'ZWL');
+
+-- AlterEnum
+-- This migration adds more than one value to an enum.
+-- With PostgreSQL versions 11 and earlier, this is not possible
+-- in a single migration. This can be worked around by creating
+-- multiple migrations, each migration adding only one value to
+-- the enum.
+
+
+ALTER TYPE "ProgramField" ADD VALUE 'ENGINEERING';
+ALTER TYPE "ProgramField" ADD VALUE 'MATHEMATICS';
+ALTER TYPE "ProgramField" ADD VALUE 'MEDICINE';
+ALTER TYPE "ProgramField" ADD VALUE 'LAW';
+ALTER TYPE "ProgramField" ADD VALUE 'BUSINESS';
+ALTER TYPE "ProgramField" ADD VALUE 'ECONOMICS';
+ALTER TYPE "ProgramField" ADD VALUE 'EDUCATION';
+ALTER TYPE "ProgramField" ADD VALUE 'PSYCHOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'SOCIOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'POLITICAL_SCIENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'PHILOSOPHY';
+ALTER TYPE "ProgramField" ADD VALUE 'HISTORY';
+ALTER TYPE "ProgramField" ADD VALUE 'LITERATURE';
+ALTER TYPE "ProgramField" ADD VALUE 'LINGUISTICS';
+ALTER TYPE "ProgramField" ADD VALUE 'ART';
+ALTER TYPE "ProgramField" ADD VALUE 'MUSIC';
+ALTER TYPE "ProgramField" ADD VALUE 'THEATER';
+ALTER TYPE "ProgramField" ADD VALUE 'FILM';
+ALTER TYPE "ProgramField" ADD VALUE 'DESIGN';
+ALTER TYPE "ProgramField" ADD VALUE 'ARCHITECTURE';
+ALTER TYPE "ProgramField" ADD VALUE 'AGRICULTURE';
+ALTER TYPE "ProgramField" ADD VALUE 'ENVIRONMENTAL_SCIENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'ASTRONOMY';
+ALTER TYPE "ProgramField" ADD VALUE 'CHEMISTRY';
+ALTER TYPE "ProgramField" ADD VALUE 'PHYSICS';
+ALTER TYPE "ProgramField" ADD VALUE 'BIOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'BIOTECHNOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'DATA_SCIENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'COMPUTER_SCIENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'ARTIFICIAL_INTELLIGENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'ROBOTICS';
+ALTER TYPE "ProgramField" ADD VALUE 'CYBERSECURITY';
+ALTER TYPE "ProgramField" ADD VALUE 'INFORMATION_TECHNOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'SOFTWARE_ENGINEERING';
+ALTER TYPE "ProgramField" ADD VALUE 'NETWORK_ENGINEERING';
+ALTER TYPE "ProgramField" ADD VALUE 'CLOUD_COMPUTING';
+ALTER TYPE "ProgramField" ADD VALUE 'DIGITAL_MARKETING';
+ALTER TYPE "ProgramField" ADD VALUE 'JOURNALISM';
+ALTER TYPE "ProgramField" ADD VALUE 'COMMUNICATIONS';
+ALTER TYPE "ProgramField" ADD VALUE 'PUBLIC_RELATIONS';
+ALTER TYPE "ProgramField" ADD VALUE 'ANTHROPOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'GEOGRAPHY';
+ALTER TYPE "ProgramField" ADD VALUE 'URBAN_PLANNING';
+ALTER TYPE "ProgramField" ADD VALUE 'SOCIAL_WORK';
+ALTER TYPE "ProgramField" ADD VALUE 'RELIGIOUS_STUDIES';
+ALTER TYPE "ProgramField" ADD VALUE 'SPORTS_SCIENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'NUTRITION';
+ALTER TYPE "ProgramField" ADD VALUE 'GENETICS';
+ALTER TYPE "ProgramField" ADD VALUE 'NEUROSCIENCE';
+ALTER TYPE "ProgramField" ADD VALUE 'MARINE_BIOLOGY';
+ALTER TYPE "ProgramField" ADD VALUE 'FORENSIC_SCIENCE';
+
+-- AlterEnum
+-- This migration adds more than one value to an enum.
+-- With PostgreSQL versions 11 and earlier, this is not possible
+-- in a single migration. This can be worked around by creating
+-- multiple migrations, each migration adding only one value to
+-- the enum.
+
+
+ALTER TYPE "ProgramType" ADD VALUE 'CERTIFICATE';
+ALTER TYPE "ProgramType" ADD VALUE 'DIPLOMA';
+ALTER TYPE "ProgramType" ADD VALUE 'ASSOCIATE_DEGREE';
+ALTER TYPE "ProgramType" ADD VALUE 'LICENCE_PROFESSIONNELLE';
+ALTER TYPE "ProgramType" ADD VALUE 'BACHELORS';
+ALTER TYPE "ProgramType" ADD VALUE 'MASTERS';
+ALTER TYPE "ProgramType" ADD VALUE 'MASTER_PROFESSIONNEL';
+ALTER TYPE "ProgramType" ADD VALUE 'MASTER_RECHERCHE';
+ALTER TYPE "ProgramType" ADD VALUE 'MBA';
+ALTER TYPE "ProgramType" ADD VALUE 'PHD';
+ALTER TYPE "ProgramType" ADD VALUE 'DOCTORAT';
+ALTER TYPE "ProgramType" ADD VALUE 'POSTDOCTORAL';
+ALTER TYPE "ProgramType" ADD VALUE 'POSTDOC';
+ALTER TYPE "ProgramType" ADD VALUE 'PROFESSIONAL_CERTIFICATION';
+ALTER TYPE "ProgramType" ADD VALUE 'CERTIFICATION_PROFESSIONNELLE';
+ALTER TYPE "ProgramType" ADD VALUE 'VOCATIONAL_TRAINING';
+ALTER TYPE "ProgramType" ADD VALUE 'FORMATION_PROFESSIONNELLE';
+ALTER TYPE "ProgramType" ADD VALUE 'ONLINE_COURSE';
+ALTER TYPE "ProgramType" ADD VALUE 'COURS_EN_LIGNE';
+ALTER TYPE "ProgramType" ADD VALUE 'EXECUTIVE_EDUCATION';
+ALTER TYPE "ProgramType" ADD VALUE 'EDUCATION_EXECUTIVE';
+ALTER TYPE "ProgramType" ADD VALUE 'CONTINUING_EDUCATION';
+ALTER TYPE "ProgramType" ADD VALUE 'FORMATION_CONTINUE';
+ALTER TYPE "ProgramType" ADD VALUE 'BTS';
+ALTER TYPE "ProgramType" ADD VALUE 'DUT';
+ALTER TYPE "ProgramType" ADD VALUE 'DEUG';
+ALTER TYPE "ProgramType" ADD VALUE 'DEUST';
+ALTER TYPE "ProgramType" ADD VALUE 'CAP';
+ALTER TYPE "ProgramType" ADD VALUE 'BEP';
+ALTER TYPE "ProgramType" ADD VALUE 'GRANDE_ECOLE';
+ALTER TYPE "ProgramType" ADD VALUE 'CLASSE_PREPA';
+ALTER TYPE "ProgramType" ADD VALUE 'CPGE';
+
+-- AlterEnum
+BEGIN;
+CREATE TYPE "SchoolType_new" AS ENUM ('PUBLIC_PRIMARY_SCHOOL', 'PRIVATE_PRIMARY_SCHOOL', 'PUBLIC_SECONDARY_SCHOOL', 'PRIVATE_SECONDARY_SCHOOL', 'PUBLIC_STATE_UNIVERSITY', 'PRIVATE_UNIVERSITY', 'INTERNATIONAL_SCHOOL', 'TECHNICAL_SCHOOL', 'VOCATIONAL_SCHOOL', 'COMMUNITY_COLLEGE', 'POLYTECHNIC', 'GRANDE_ECOLE', 'LYCEE_PUBLIC', 'LYCEE_PRIVE', 'COLLEGE_PUBLIC', 'COLLEGE_PRIVE', 'ECOLE_MATERNELLE', 'ECOLE_ELEMENTAIRE', 'UNIVERSITE_PUBLIQUE', 'UNIVERSITE_PRIVEE', 'ECOLE_SUPERIEURE', 'ECOLE_DE_COMMERCE', 'ECOLE_D_INGENIEURS', 'ECOLE_DES_ARTS');
+ALTER TABLE "School" ALTER COLUMN "type" TYPE "SchoolType_new" USING ("type"::text::"SchoolType_new");
+ALTER TYPE "SchoolType" RENAME TO "SchoolType_old";
+ALTER TYPE "SchoolType_new" RENAME TO "SchoolType";
+DROP TYPE "SchoolType_old";
+COMMIT;
+
+-- AlterTable
+ALTER TABLE "Course" ALTER COLUMN "credits" DROP NOT NULL;

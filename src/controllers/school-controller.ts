@@ -811,6 +811,261 @@ const superUserSeeSchools = async (req: Request, res: Response) => {
   OrchestrationResult.list(res, schools, count, itemsPerPage, page);
 };
 
+// const searchSchools = async (req: Request, res: Response) => {
+//   const { name, itemsPerPage, page, skip } =
+//     getNameAndPageAndItemsPerPageFromRequestQuery(req);
+
+//   // School search query
+//   const city = req.query.city
+//     ? String(sanitizeInput(req.query.city as string))
+//     : "";
+//   const country = req.query.country
+//     ? String(sanitizeInput(req.query.country as string))
+//     : "";
+//   const type = req.query.type
+//     ? String(sanitizeInput(req.query.type as string))
+//     : "";
+//   const longitude = req.query.longitude
+//     ? String(sanitizeInput(req.query.longitude as string))
+//     : "";
+//   const latitude = req.query.latitude
+//     ? String(sanitizeInput(req.query.latitude as string))
+//     : "";
+
+//   // Program search query
+//   const programName = req.query.programName
+//     ? String(sanitizeInput(req.query.programName as string))
+//     : "";
+//   const programType = req.query.programType
+//     ? String(sanitizeInput(req.query.programType as string))
+//     : "";
+//   const programField = req.query.programField
+//     ? String(sanitizeInput(req.query.programField as string))
+//     : "";
+//   const programMinPrice = req.query.programMinPrice
+//     ? String(sanitizeInput(req.query.programMinPrice as string))
+//     : "";
+//   const programMaxPrice = req.query.programMaxPrice
+//     ? String(sanitizeInput(req.query.programMaxPrice as string))
+//     : "";
+
+//   // Order by
+//   const orderByVisits =
+//     req.query.orderByVisits === "asc" || req.query.orderByVisits === "desc"
+//       ? (String(req.query.orderByVisits) as "asc" | "desc")
+//       : "desc";
+//   const orderByRating =
+//     req.query.orderByRating === "asc" || req.query.orderByRating === "desc"
+//       ? (String(req.query.orderByRating) as "asc" | "desc")
+//       : "desc";
+//   const orderByDistance =
+//     req.query.orderByDistance === "asc" || req.query.orderByDistance === "desc"
+//       ? (String(req.query.orderByDistance) as "asc" | "desc")
+//       : "asc";
+
+//   // Query validations
+//   if (longitude || latitude) {
+//     if (!isNumeric(latitude) || !isNumeric(longitude)) {
+//       OrchestrationResult.badRequest(
+//         res,
+//         CODES.VALIDATION_REQUEST_ERROR,
+//         "Provide a correct longitude and latitude"
+//       );
+//       return;
+//     }
+//     if (
+//       Number(latitude) < -90 ||
+//       Number(latitude) > 90 ||
+//       Number(longitude) < -180 ||
+//       Number(longitude) > 180
+//     ) {
+//       OrchestrationResult.badRequest(
+//         res,
+//         CODES.VALIDATION_REQUEST_ERROR,
+//         "Provide a correct longitude and latitude"
+//       );
+//       return;
+//     }
+//   }
+
+//   // Postgres search query
+//   const query = `
+//     SELECT
+//       s.id AS schoolId,
+//       s.name AS schoolName,
+//       s.description AS schoolDescription,
+//       s.type AS schoolType,
+//       s.longitude AS schoolLongitude,
+//       s.latitude AS schoolLatitude,
+//       s.country AS schoolCountry,
+//       s.city AS schoolCity,
+//       s.email AS schoolEmail,
+//       s."phoneNumber" AS schoolPhoneNumber,
+//       s."createdAt" AS schoolCreatedAt,
+//       s."updatedAt" AS schoolUpdatedAt,
+//       s.website AS schoolWebsite,
+//       s.visits AS schoolVisits,
+//       s.rating AS schoolRating
+//       ${
+//         (programName ||
+//           programField ||
+//           programType ||
+//           programMinPrice ||
+//           programMaxPrice) &&
+//         `, STRING_AGG(p.name, ', ') AS programNames`
+//       }
+//       ${
+//         longitude &&
+//         latitude &&
+//         `,(6371 * acos(cos(radians(${Number(
+//           latitude
+//         )})) * cos(radians(s.latitude)) *
+//         cos(radians(s.longitude) - radians(${Number(longitude)})) +
+//         sin(radians(${Number(
+//           latitude
+//         )})) * sin(radians(s.latitude)))) AS schoolDistance`
+//       }
+//     FROM "School" AS s
+//     ${
+//       (programName ||
+//         programField ||
+//         programType ||
+//         programMinPrice ||
+//         programMaxPrice) &&
+//       ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId"
+//         INNER JOIN "Program" as p ON sp."programId" = p."id"
+//       `
+//     }
+//     WHERE
+//       s.name ILIKE '%${name}%' AND
+//       s.country ILIKE '%${country}%' AND
+//       s.city ILIKE '%${city}%' AND
+//       ${type && `s.type = '${type}' AND`}
+//       ${programName && `p.name ILIKE '%${programName}%' AND`}
+//       ${programField && `p.field = '${programField}' AND`}
+//       ${programType && `p.type = '${programType}' AND`}
+//       ${
+//         programMaxPrice &&
+//         programMinPrice &&
+//         `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
+//           programMaxPrice
+//         )} AND`
+//       }
+//       ${
+//         (programName ||
+//           programField ||
+//           programType ||
+//           programMinPrice ||
+//           programMaxPrice) &&
+//         `
+//           sp."isDeleted" = false AND
+//           p."isDeleted" = false  AND
+//         `
+//       }
+//       s."isDeleted" = false
+//     ${
+//       (programName ||
+//         programField ||
+//         programType ||
+//         programMinPrice ||
+//         programMaxPrice) &&
+//       "GROUP BY s.id"
+//     }
+//     ORDER BY
+//       ${longitude && latitude && `schoolDistance ${orderByDistance},`}
+//       schoolRating ${orderByRating},
+//       schoolVisits ${orderByVisits}
+//     LIMIT ${itemsPerPage} OFFSET ${skip}
+//   `;
+
+//   // Postgres count query
+//   const countQuery = `
+//   SELECT
+//     COUNT(s.id)
+//     FROM "School" AS s
+//     ${
+//       (programName ||
+//         programField ||
+//         programType ||
+//         programMinPrice ||
+//         programMaxPrice) &&
+//       ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId"
+//         INNER JOIN "Program" as p ON sp."programId" = p."id"
+//       `
+//     }
+//     WHERE
+//       s.name ILIKE '%${name}%' AND
+//       s.country ILIKE '%${country}%' AND
+//       s.city ILIKE '%${city}%' AND
+//       ${type && `s.type = '${type}' AND`}
+//       ${programName && `p.name ILIKE '%${programName}%' AND`}
+//       ${programField && `p.field = '${programField}' AND`}
+//       ${programType && `p.type = '${programType}' AND`}
+//       ${
+//         programMaxPrice &&
+//         programMinPrice &&
+//         `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
+//           programMaxPrice
+//         )} AND`
+//       }
+//       ${
+//         (programName ||
+//           programField ||
+//           programType ||
+//           programMinPrice ||
+//           programMaxPrice) &&
+//         `
+//           sp."isDeleted" = false AND
+//           p."isDeleted" = false  AND
+//         `
+//       }
+//       s."isDeleted" = false
+//       ${
+//         (programName ||
+//           programField ||
+//           programType ||
+//           programMinPrice ||
+//           programMaxPrice) &&
+//         "GROUP BY s.id"
+//       }
+
+//   `;
+
+//   const schools = (await prisma.$queryRawUnsafe(query)) as any[];
+//   const formattedSchools = schools.map((school) => {
+//     return {
+//       id: school.schoolid,
+//       name: school.schoolname,
+//       description: school.schooldescription,
+//       type: school.schooltype,
+//       longitude: school.schoollongitude,
+//       latitude: school.schoollatitude,
+//       country: school.schoolcountry,
+//       city: school.schoolcity,
+//       email: school.schoolemail,
+//       phoneNumber: school.schoolphonenumber,
+//       website: school.schoolwebsite,
+//       visits: school.schoolvisits,
+//       rating: school.schoolrating,
+//       createdAt: school.schoolcreatedat,
+//       updatedAt: school.schoolupdatedat,
+//       distance: school.schooldistance || undefined,
+//       programs: school.programnames
+//         ? school.programnames.split(", ")
+//         : undefined,
+//     };
+//   });
+
+//   const countData = await prisma.$queryRawUnsafe<{ count: number }[]>(
+//     countQuery
+//   );
+//   const count = Number(
+//     countData.length > 0 ? countData[countData.length - 1].count : 0
+//   );
+
+//   OrchestrationResult.list(res, formattedSchools, count, itemsPerPage, page);
+// };
+
 const searchSchools = async (req: Request, res: Response) => {
   const { name, itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
@@ -847,6 +1102,9 @@ const searchSchools = async (req: Request, res: Response) => {
     : "";
   const programMaxPrice = req.query.programMaxPrice
     ? String(sanitizeInput(req.query.programMaxPrice as string))
+    : "";
+  const programCurrency = req.query.programCurrency
+    ? String(sanitizeInput(req.query.programCurrency as string))
     : "";
 
   // Order by
@@ -911,7 +1169,8 @@ const searchSchools = async (req: Request, res: Response) => {
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice) &&
+          programMaxPrice ||
+          programCurrency) &&
         `, STRING_AGG(p.name, ', ') AS programNames`
       }
       ${
@@ -931,7 +1190,8 @@ const searchSchools = async (req: Request, res: Response) => {
         programField ||
         programType ||
         programMinPrice ||
-        programMaxPrice) &&
+        programMaxPrice ||
+        programCurrency) &&
       ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId" 
         INNER JOIN "Program" as p ON sp."programId" = p."id"
       `
@@ -947,16 +1207,18 @@ const searchSchools = async (req: Request, res: Response) => {
       ${
         programMaxPrice &&
         programMinPrice &&
+        programCurrency &&
         `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
           programMaxPrice
-        )} AND`
+        )} AND sp.currency = '${programCurrency}' AND`
       }
       ${
         (programName ||
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice) &&
+          programMaxPrice ||
+          programCurrency) &&
         ` 
           sp."isDeleted" = false AND
           p."isDeleted" = false  AND 
@@ -968,7 +1230,8 @@ const searchSchools = async (req: Request, res: Response) => {
         programField ||
         programType ||
         programMinPrice ||
-        programMaxPrice) &&
+        programMaxPrice ||
+        programCurrency) &&
       "GROUP BY s.id"
     }
     ORDER BY
@@ -988,7 +1251,8 @@ const searchSchools = async (req: Request, res: Response) => {
         programField ||
         programType ||
         programMinPrice ||
-        programMaxPrice) &&
+        programMaxPrice ||
+        programCurrency) &&
       ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId" 
         INNER JOIN "Program" as p ON sp."programId" = p."id"
       `
@@ -1004,16 +1268,18 @@ const searchSchools = async (req: Request, res: Response) => {
       ${
         programMaxPrice &&
         programMinPrice &&
+        programCurrency &&
         `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
           programMaxPrice
-        )} AND`
+        )} AND sp.currency = '${programCurrency}' AND`
       }
       ${
         (programName ||
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice) &&
+          programMaxPrice ||
+          programCurrency) &&
         ` 
           sp."isDeleted" = false AND
           p."isDeleted" = false  AND 
@@ -1025,7 +1291,8 @@ const searchSchools = async (req: Request, res: Response) => {
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice) &&
+          programMaxPrice ||
+          programCurrency) &&
         "GROUP BY s.id"
       }
     

@@ -7,6 +7,22 @@ import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name
 const createCourse = async (req: Request, res: Response) => {
   let { code, title, description, credits } = req.body;
 
+  const existingCourse = await prisma.course.findFirst({
+    where: {
+      code,
+      title,
+    },
+  });
+
+  if (existingCourse) {
+    OrchestrationResult.badRequest(
+      res,
+      CODES.COURSE_EXISTS_ALREADY,
+      "Course exists already"
+    );
+    return;
+  }
+
   const course = await prisma.course.create({
     data: {
       code,
