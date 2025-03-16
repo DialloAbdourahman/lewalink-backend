@@ -1166,3 +1166,102 @@ export default {
   hasPassword,
   addPassword,
 };
+
+
+// const tempCreateAdmin = async (req: Request, res: Response) => {
+//   let { email, password, name } = req.body;
+
+//   password = await PasswordManager.toHash(password);
+
+//   const admin = await prisma.user.create({
+//     data: { email, name, password, type: UserType.Admin, isActive: true },
+//   });
+
+//   const secret = authenticator.generateSecret();
+
+//   const uri = authenticator.keyuri(admin.id, "Tradez", secret);
+//   const image = await qrCode.toDataURL(uri);
+
+//   await prisma.user.update({
+//     where: { id: admin.id },
+//     data: {
+//       twoFATempSecret: secret,
+//     },
+//   });
+
+//   res.json(image);
+// };
+
+// const setTwoFA = async (req: Request, res: Response) => {
+//   let { code, id } = req.body;
+
+//   const user = await prisma.user.findUnique({ where: { id } });
+//   const tempSecret = user?.twoFATempSecret;
+
+//   const verified = authenticator.check(code, tempSecret as string);
+
+//   if (!verified) {
+//     console.log("not verified");
+//     return;
+//   }
+
+//   await prisma.user.update({
+//     where: { id },
+//     data: {
+//       twoFAEnabled: true,
+//       twoFASecret: tempSecret,
+//     },
+//   });
+
+//   res.json("You got the tokens!!");
+// };
+
+// const verifyTwoFA = async (req: Request, res: Response) => {
+//   let { code, id } = req.body;
+
+//   const user = await prisma.user.findUnique({ where: { id } });
+//   const secret = user?.twoFASecret;
+
+//   const verified = authenticator.check(code, secret as string);
+
+//   if (!verified) {
+//     console.log("not verified");
+//     return;
+//   }
+
+//   // You can send the tokens here.
+//   res.json("You got the tokens!!");
+// };
+
+
+
+// I will first use an admin to create another admin and set his temp secret with this : const secret = authenticator.generateSecret();
+
+// It will send an email to the admin to ask him to activate his account.
+
+// When the admin tries to login with his activated account:
+
+/*
+
+  if(admin logs in){
+
+    if(twoFA is disabled) {
+      Send the admin a qr code, his user info (basic) and the enabled property. 
+      const uri = authenticator.keyuri(admin.id, "Tradez", secret);
+      const image = await qrCode.toDataURL(uri);
+
+      On the front end scan it, get the code and enter the code and submit it to the setTwoFa route
+      
+      Finally, generate the tokens and send him
+    }else {
+      His user info (basic) and the enabled property. 
+      On the front end enter the code and submit it to the verifyTwoFa route
+
+      Finally, generate the tokens and send to the user
+    }
+  
+  }else{
+    Generate tokens and send to the user. 
+  }
+
+*/

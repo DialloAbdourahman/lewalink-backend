@@ -329,23 +329,24 @@ model User {
 }
 
 model School {
-  id          String     @id @default(uuid())
-  name        String     @unique
-  type        SchoolType
-  longitude   Float
-  latitude    Float
-  country     String
-  city        String
-  visits      Int        @default(0)
-  rating      Float      @default(0)
-  email       String?
-  phoneNumber String?
-  website     String?
-  description String?
-  pictures    String[]
-  isDeleted   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id              String     @id @default(uuid())
+  name            String     @unique
+  type            SchoolType
+  longitude       Float
+  latitude        Float
+  country         String
+  city            String
+  fullAddressName String     @default("")
+  visits          Int        @default(0)
+  rating          Float      @default(0)
+  email           String?
+  phoneNumber     String?
+  website         String?
+  description     String?
+  pictures        String[]
+  isDeleted       Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   creator   User   @relation(fields: [creatorId], references: [id])
   creatorId String
@@ -464,8 +465,3 @@ model SchoolRating {
   @@index([schoolId, isDeleted])
   @@index([schoolId, clientId, isDeleted])
 }
-
-// FURTURE CHANGES
-
-// Think about order by price (should it be second, third, etc etc).
-// Think on having a single search where the user can have only one search bar and can enter the program name or the school name. 

@@ -147,6 +147,7 @@ export const validateCreateSchool: ValidatorMiddleware[] = [
   body("latitude").exists().isFloat().withMessage("Provide a latitude"),
   body("country").exists().withMessage("Provide a country"),
   body("city").exists().withMessage("Provide a city"),
+  body("fullAddressName").exists().withMessage("Provide a full address"),
   validateRequest,
 ];
 
