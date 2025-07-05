@@ -1182,7 +1182,7 @@ const searchSchools = async (req: Request, res: Response) => {
           programMinPrice ||
           programMaxPrice ||
           programCurrency) &&
-        `, STRING_AGG(p.name, ', ') AS programNames`
+        `, STRING_AGG(p.name, ', ') AS programNames , STRING_AGG(p.id, ', ') AS programIds`
       }
       ${
         longitude &&
@@ -1310,7 +1310,20 @@ const searchSchools = async (req: Request, res: Response) => {
   `;
 
   const schools = (await prisma.$queryRawUnsafe(query)) as any[];
+  console.log(schools);
+
   const formattedSchools = schools.map((school) => {
+    const programIds = school.programids?.split(", ");
+    const programNames = school.programnames?.split(", ");
+
+    const programs =
+      programIds && programNames && programIds.length === programNames.length
+        ? programIds.map((id: string, index: number) => ({
+            id,
+            name: programNames[index],
+          }))
+        : undefined;
+
     return {
       id: school.schoolid,
       name: school.schoolname,
@@ -1328,9 +1341,7 @@ const searchSchools = async (req: Request, res: Response) => {
       createdAt: school.schoolcreatedat,
       updatedAt: school.schoolupdatedat,
       distance: school.schooldistance || undefined,
-      programs: school.programnames
-        ? school.programnames.split(", ")
-        : undefined,
+      programs,
     };
   });
 

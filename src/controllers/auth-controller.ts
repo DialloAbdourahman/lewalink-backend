@@ -668,7 +668,7 @@ const restoreUser = async (req: Request, res: Response) => {
       },
     });
 
-    if (adminsCount >= Number(process.env.TOTAL_ADMINS_IN_SYSTEM)) {
+    if (adminsCount + 1 >= Number(process.env.TOTAL_ADMINS_IN_SYSTEM)) {
       OrchestrationResult.badRequest(
         res,
         CODES.MAX_ADMINS,
@@ -1167,7 +1167,6 @@ export default {
   addPassword,
 };
 
-
 // const tempCreateAdmin = async (req: Request, res: Response) => {
 //   let { email, password, name } = req.body;
 
@@ -1232,8 +1231,6 @@ export default {
 //   // You can send the tokens here.
 //   res.json("You got the tokens!!");
 // };
-
-
 
 // I will first use an admin to create another admin and set his temp secret with this : const secret = authenticator.generateSecret();
 
