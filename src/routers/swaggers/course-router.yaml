@@ -1,0 +1,222 @@
+# Course module routes
+
+/api/course/v1/:
+  post:
+    summary: Create a new course
+    description: Creates a new course. Only users with **Admin** or **Editor** roles can access this endpoint.
+    tags:
+      - Course module
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - code
+              - title
+              - description
+              - credits
+            properties:
+              code:
+                type: string
+                example: "CS101"
+              title:
+                type: string
+                example: "Introduction to Computer Science"
+              description:
+                type: string
+                example: "Course description here"
+              credits:
+                type: integer
+                example: 3
+    responses:
+      201:
+        description: Course created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  $ref: '#/components/schemas/Course'
+      400:
+        description: Bad request – validation failed or duplicate course
+      401:
+        description: Unauthorized – authentication required
+      500:
+        description: Unexpected server error
+
+  get:
+    summary: Get list of courses
+    tags:
+      - Course module
+    parameters:
+      - in: query
+        name: title
+        schema:
+          type: string
+        description: Filter by course title (partial, case-insensitive)
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: Page number (pagination)
+      - in: query
+        name: itemsPerPage
+        schema:
+          type: integer
+        description: Items per page (pagination)
+    responses:
+      200:
+        description: Paginated list of courses
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                totalPages:
+                  type: integer
+                itemsPerPage:
+                  type: integer
+                page:
+                  type: integer
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Course'
+      400:
+        description: Validation error – query parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+        x-errors:
+          - code: "VALIDATION_REQUEST_ERROR"
+            message: "Numeric query parameters must be numbers"
+      500:
+        description: Unexpected server error
+
+/api/course/v1/{id}:
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      description: UUID of the course
+  patch:
+    summary: Update a course
+    tags:
+      - Course module
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+              title:
+                type: string
+              description:
+                type: string
+              credits:
+                type: integer
+    responses:
+      200:
+        description: Course updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  $ref: '#/components/schemas/Course'
+      400:
+        description: Validation error
+      404:
+        description: Course not found
+  get:
+    summary: Get a single course by ID
+    tags:
+      - Course module
+    responses:
+      200:
+        description: Course details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  $ref: '#/components/schemas/Course'
+      404:
+        description: Course not found
+  delete:
+    summary: Delete (soft-delete) a course
+    tags:
+      - Course module
+    responses:
+      200:
+        description: Course deleted successfully
+      404:
+        description: Course not found
+
+/api/course/v1/restore/{id}:
+  post:
+    summary: Restore a deleted course
+    tags:
+      - Course module
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Course restored successfully
+      404:
+        description: Course not found
+
+/api/course/v1/super-user-get-courses:
+  get:
+    summary: Admin/Editor – get list of all courses (including deleted)
+    tags:
+      - Course module
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: List including deleted courses
+
+/api/course/v1/super-user-get-course/{id}:
+  get:
+    summary: Admin/Editor – get course details (including deleted)
+    tags:
+      - Course module
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Course details (may be deleted)
+      404:
+        description: Course not found

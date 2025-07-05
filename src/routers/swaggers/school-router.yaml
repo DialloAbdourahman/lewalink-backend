@@ -1,0 +1,376 @@
+# School module routes
+
+/api/school/v1/:
+  post:
+    summary: Create a new school
+    tags:
+      - School module
+    description: Requires multipart/form-data with images array. Only **Admin** or **Editor** roles can create schools.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - name
+              - type
+              - description
+              - longitude
+              - latitude
+              - country
+              - city
+              - images
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              description:
+                type: string
+              longitude:
+                type: number
+                format: float
+              latitude:
+                type: number
+                format: float
+              country:
+                type: string
+              city:
+                type: string
+              email:
+                type: string
+              phoneNumber:
+                type: string
+              website:
+                type: string
+              fullAddressName:
+                type: string
+              images:
+                type: array
+                items:
+                  type: string
+                  format: binary
+    responses:
+      201:
+        description: School created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  $ref: '#/components/schemas/School'
+      400:
+        description: Various error scenarios
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+        x-errors:
+          - code: "MULTER_FILE_DOES_NOT_EXIST"
+            message: "Provide images"
+          - code: "MULTER_TOO_MANY_IMAGES"
+            message: "Maximum {TOTAL_IMAGES_PER_SCHOOL} images"
+          - code: "SCHOOL_EXIST_ALREADY"
+            message: "School exist already"
+          - code: "VALIDATION_REQUEST_ERROR"
+            message: "Request validation failed"
+      401:
+        description: Unauthorized – authentication required
+      403:
+        description: Forbidden – user role not allowed
+      500:
+        description: Unexpected server error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+        x-errors:
+          - code: "IMAGE_UPLOAD_ERROR"
+            message: "Error uploading image to s3"
+          - code: "UNEXPECTED_ERROR"
+            message: "Something went wrong"
+
+  get:
+    summary: Search schools (public)
+    tags:
+      - School module
+    description: Uses multiple query parameters for advanced search.
+    parameters:
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: School name (partial)
+      - in: query
+        name: city
+        schema:
+          type: string
+      - in: query
+        name: country
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+        description: School type (e.g., University)
+      - in: query
+        name: longitude
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: latitude
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: programName
+        schema:
+          type: string
+      - in: query
+        name: programType
+        schema:
+          type: string
+      - in: query
+        name: programField
+        schema:
+          type: string
+      - in: query
+        name: programMinPrice
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: programMaxPrice
+        schema:
+          type: number
+          format: float
+      - in: query
+        name: programCurrency
+        schema:
+          type: string
+      - in: query
+        name: orderByVisits
+        schema:
+          type: string
+          enum: [asc, desc]
+      - in: query
+        name: orderByRating
+        schema:
+          type: string
+          enum: [asc, desc]
+      - in: query
+        name: page
+        schema:
+          type: integer
+      - in: query
+        name: itemsPerPage
+        schema:
+          type: integer
+    responses:
+      200:
+        description: Paginated results
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/School'
+      400:
+        description: Validation error – bad query parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+        x-errors:
+          - code: "VALIDATION_REQUEST_ERROR"
+            message: "Numeric query parameters must be numbers"
+
+/api/school/v1/visit/{id}:
+  get:
+    summary: Increment and fetch a school's visits
+    tags:
+      - School module
+    parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+    responses:
+      200:
+        description: School details with updated visits count
+
+/api/school/v1/{id}:
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+  patch:
+    summary: Update a school
+    tags:
+      - School module
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              country:
+                type: string
+              city:
+                type: string
+              longitude:
+                type: number
+              latitude:
+                type: number
+              email:
+                type: string
+              phoneNumber:
+                type: string
+              website:
+                type: string
+    responses:
+      200:
+        description: School updated successfully
+      404:
+        description: School not found
+  get:
+    summary: Get school details (public)
+    tags:
+      - School module
+    responses:
+      200:
+        description: School details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  $ref: '#/components/schemas/School'
+      404:
+        description: School not found
+  delete:
+    summary: Delete (soft-delete) a school
+    tags:
+      - School module
+    responses:
+      200:
+        description: School deleted successfully
+      404:
+        description: School not found
+
+/api/school/v1/add-images/{id}:
+  post:
+    summary: Add images to an existing school
+    tags:
+      - School module
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              images:
+                type: array
+                items:
+                  type: string
+                  format: binary
+    responses:
+      200:
+        description: Images added successfully
+      404:
+        description: School not found
+
+/api/school/v1/delete-image:
+  delete:
+    summary: Delete a specific image from a school
+    tags:
+      - School module
+    parameters:
+      - in: query
+        name: schoolId
+        schema:
+          type: string
+        required: true
+      - in: query
+        name: picture
+        schema:
+          type: string
+        required: true
+    responses:
+      200:
+        description: Image deleted successfully
+      404:
+        description: School or image not found
+
+/api/school/v1/restore/{id}:
+  post:
+    summary: Restore a deleted school
+    tags:
+      - School module
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: School restored successfully
+      404:
+        description: School not found
+
+/api/school/v1/super-user-see-schools:
+  get:
+    summary: Admin/Editor – list schools including deleted
+    tags:
+      - School module
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: List of schools
+
+/api/school/v1/super-user-see-school/{id}:
+  get:
+    summary: Admin/Editor – school details including deleted
+    tags:
+      - School module
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: School details
+      404:
+        description: School not found

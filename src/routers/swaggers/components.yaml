@@ -1,0 +1,178 @@
+components:
+  schemas:
+    Course:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        code:
+          type: string
+          example: "CS101"
+        title:
+          type: string
+          example: "Introduction to Computer Science"
+        description:
+          type: string
+          example: "Basic introduction to computer science concepts"
+        credits:
+          type: integer
+          example: 3
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isDeleted:
+          type: boolean
+    Program:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174111"
+        name:
+          type: string
+          example: "Bachelor of Science in Computer Science"
+        description:
+          type: string
+          example: "Undergraduate program focusing on CS fundamentals"
+        duration:
+          type: integer
+          description: Duration in years
+          example: 4
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isDeleted:
+          type: boolean
+    School:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174222"
+        name:
+          type: string
+          example: "Tech University"
+        description:
+          type: string
+          example: "A leading institution for technology education."
+        type:
+          type: string
+          example: "University"
+        longitude:
+          type: number
+          format: float
+          example: -122.084
+        latitude:
+          type: number
+          format: float
+          example: 37.422
+        country:
+          type: string
+          example: "USA"
+        city:
+          type: string
+          example: "Mountain View"
+        email:
+          type: string
+          example: "info@techuniversity.edu"
+        phoneNumber:
+          type: string
+          example: "+1 555-123-4567"
+        website:
+          type: string
+          example: "https://techuniversity.edu"
+        pictures:
+          type: array
+          items:
+            type: string
+            example: "c4a8edf0-1f2c-41f7-bc12-89e7f6d7e9ab"
+        visits:
+          type: integer
+          example: 42
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isDeleted:
+          type: boolean
+    SchoolRating:
+      type: object
+      properties:
+        id:
+          type: string
+        rating:
+          type: number
+          format: float
+          example: 4.5
+        comment:
+          type: string
+          example: "Great institution!"
+        schoolId:
+          type: string
+        creatorId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    SchoolProgram:
+      type: object
+      properties:
+        id:
+          type: string
+        schoolId:
+          type: string
+        programId:
+          type: string
+        price:
+          type: number
+          format: float
+          example: 1500
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isDeleted:
+          type: boolean
+    ProgramCourse:
+      type: object
+      properties:
+        id:
+          type: string
+        programId:
+          type: string
+        courseId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        isDeleted:
+          type: boolean
+    ErrorResponse:
+      type: object
+      description: Standard error response format used across the API.
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code.
+          example: "VALIDATION_REQUEST_ERROR"
+        message:
+          type: string
+          description: Human-readable description of what went wrong.
+          example: "Provide an ID"

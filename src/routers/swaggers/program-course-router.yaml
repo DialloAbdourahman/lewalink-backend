@@ -1,0 +1,117 @@
+# Program Course module routes
+
+/api/program-course/v1/:
+  post:
+    summary: Add a course to a program
+    tags:
+      - Program Course module
+    description: Only **Admin** or **Editor** roles.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - programId
+              - courseId
+            properties:
+              programId:
+                type: string
+              courseId:
+                type: string
+    responses:
+      201:
+        description: Program course created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  $ref: '#/components/schemas/ProgramCourse'
+      400:
+        description: Validation error or duplicate
+
+/api/program-course/v1/{id}:
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+  delete:
+    summary: Delete a program course
+    tags:
+      - Program Course module
+    responses:
+      200:
+        description: Deleted successfully
+      404:
+        description: Not found
+
+/api/program-course/v1/restore/{id}:
+  post:
+    summary: Restore a program course
+    tags:
+      - Program Course module
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Restored successfully
+      404:
+        description: Not found
+
+/api/program-course/v1/courses/{programId}:
+  get:
+    summary: Public – list courses for a program
+    tags:
+      - Program Course module
+    parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: List of courses
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "SUCCESS"
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProgramCourse'
+
+/api/program-course/v1/super-user-get-courses/{programId}:
+  get:
+    summary: Admin/Editor – list courses (including deleted) for a program
+    tags:
+      - Program Course module
+    parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: List of courses
+      404:
+        description: Program not found
