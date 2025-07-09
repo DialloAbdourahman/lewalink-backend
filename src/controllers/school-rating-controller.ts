@@ -259,6 +259,7 @@ const deleteSchoolRating = async (req: Request, res: Response) => {
 
 const getSchoolRatings = async (req: Request, res: Response) => {
   const { schoolId } = req.params;
+  const { ratingCount } = req.query;
 
   if (!schoolId) {
     OrchestrationResult.badRequest(
@@ -272,11 +273,21 @@ const getSchoolRatings = async (req: Request, res: Response) => {
   const { itemsPerPage, page, skip } =
     getNameAndPageAndItemsPerPageFromRequestQuery(req);
 
-  const courses = await prisma.schoolRating.findMany({
-    where: {
-      schoolId,
-      isDeleted: false,
-    },
+  const filters: {
+    schoolId: string;
+    isDeleted: boolean;
+    stars?: number;
+  } = {
+    schoolId,
+    isDeleted: false,
+  };
+
+  if (ratingCount) {
+    filters.stars = Number(ratingCount);
+  }
+
+  const ratings = await prisma.schoolRating.findMany({
+    where: filters,
     skip: skip,
     take: itemsPerPage,
     select: {
@@ -300,7 +311,7 @@ const getSchoolRatings = async (req: Request, res: Response) => {
     },
   });
 
-  OrchestrationResult.list(res, courses, count, itemsPerPage, page);
+  OrchestrationResult.list(res, ratings, count, itemsPerPage, page);
 };
 
 export default {
