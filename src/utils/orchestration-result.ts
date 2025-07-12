@@ -16,6 +16,7 @@ export class OrchestrationResult {
       totalPages,
       itemsPerPage,
       page,
+      totalItems,
       data,
     });
     return;
