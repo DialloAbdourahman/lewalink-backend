@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "node api.js && tsc",
     "test": "jest --watchAll --no-cache --runInBand",
-    "dev": "ts-node-dev src/index.ts",
-    "start": "node dist/index.js"
+    "dev": "node api.js && ts-node-dev src/index.ts",
+    "start": "node api.js && node dist/index.js"
   },
   "jest": {
     "preset": "ts-jest",

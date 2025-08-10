@@ -1114,9 +1114,6 @@ const searchSchools = async (req: Request, res: Response) => {
   const programMaxPrice = req.query.programMaxPrice
     ? String(sanitizeInput(req.query.programMaxPrice as string))
     : "";
-  const programCurrency = req.query.programCurrency
-    ? String(sanitizeInput(req.query.programCurrency as string))
-    : "";
 
   // Order by
   const orderByVisits =
@@ -1180,8 +1177,7 @@ const searchSchools = async (req: Request, res: Response) => {
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice ||
-          programCurrency) &&
+          programMaxPrice) &&
         `, STRING_AGG(p.name, ', ') AS programNames , STRING_AGG(p.id, ', ') AS programIds`
       }
       ${
@@ -1201,8 +1197,7 @@ const searchSchools = async (req: Request, res: Response) => {
         programField ||
         programType ||
         programMinPrice ||
-        programMaxPrice ||
-        programCurrency) &&
+        programMaxPrice) &&
       ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId" 
         INNER JOIN "Program" as p ON sp."programId" = p."id"
       `
@@ -1215,21 +1210,14 @@ const searchSchools = async (req: Request, res: Response) => {
       ${programName && `p.name ILIKE '%${programName}%' AND`}
       ${programField && `p.field = '${programField}' AND`}
       ${programType && `p.type = '${programType}' AND`}
-      ${
-        programMaxPrice &&
-        programMinPrice &&
-        programCurrency &&
-        `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
-          programMaxPrice
-        )} AND sp.currency = '${programCurrency}' AND`
-      }
+      ${programMinPrice ? `sp.price >= ${Number(programMinPrice)} AND` : ""}
+      ${programMaxPrice ? `sp.price <= ${Number(programMaxPrice)} AND` : ""}
       ${
         (programName ||
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice ||
-          programCurrency) &&
+          programMaxPrice) &&
         ` 
           sp."isDeleted" = false AND
           p."isDeleted" = false  AND 
@@ -1241,8 +1229,7 @@ const searchSchools = async (req: Request, res: Response) => {
         programField ||
         programType ||
         programMinPrice ||
-        programMaxPrice ||
-        programCurrency) &&
+        programMaxPrice) &&
       "GROUP BY s.id"
     }
     ORDER BY
@@ -1262,8 +1249,7 @@ const searchSchools = async (req: Request, res: Response) => {
         programField ||
         programType ||
         programMinPrice ||
-        programMaxPrice ||
-        programCurrency) &&
+        programMaxPrice) &&
       ` INNER JOIN "SchoolProgram" as sp ON s."id" = sp."schoolId" 
         INNER JOIN "Program" as p ON sp."programId" = p."id"
       `
@@ -1276,21 +1262,14 @@ const searchSchools = async (req: Request, res: Response) => {
       ${programName && `p.name ILIKE '%${programName}%' AND`}
       ${programField && `p.field = '${programField}' AND`}
       ${programType && `p.type = '${programType}' AND`}
-      ${
-        programMaxPrice &&
-        programMinPrice &&
-        programCurrency &&
-        `sp.price BETWEEN ${Number(programMinPrice)} AND ${Number(
-          programMaxPrice
-        )} AND sp.currency = '${programCurrency}' AND`
-      }
+      ${programMinPrice ? `sp.price >= ${Number(programMinPrice)} AND` : ""}
+      ${programMaxPrice ? `sp.price <= ${Number(programMaxPrice)} AND` : ""}
       ${
         (programName ||
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice ||
-          programCurrency) &&
+          programMaxPrice) &&
         ` 
           sp."isDeleted" = false AND
           p."isDeleted" = false  AND 
@@ -1302,15 +1281,15 @@ const searchSchools = async (req: Request, res: Response) => {
           programField ||
           programType ||
           programMinPrice ||
-          programMaxPrice ||
-          programCurrency) &&
+          programMaxPrice) &&
         "GROUP BY s.id"
       }
     
   `;
 
+  console.log(query);
+
   const schools = (await prisma.$queryRawUnsafe(query)) as any[];
-  console.log(schools);
 
   const formattedSchools = schools.map((school) => {
     const programIds = school.programids?.split(", ");
