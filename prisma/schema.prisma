@@ -14,36 +14,11 @@ enum UserType {
 }
 
 enum SchoolType {
-  PUBLIC_PRIMARY_SCHOOL
-  PRIVATE_PRIMARY_SCHOOL
-  PUBLIC_SECONDARY_SCHOOL
-  PRIVATE_SECONDARY_SCHOOL
   PUBLIC_STATE_UNIVERSITY
   PRIVATE_UNIVERSITY
-  INTERNATIONAL_SCHOOL
-  TECHNICAL_SCHOOL
-  VOCATIONAL_SCHOOL
-  COMMUNITY_COLLEGE
-  POLYTECHNIC
-  GRANDE_ECOLE
-  LYCEE_PUBLIC
-  LYCEE_PRIVE
-  COLLEGE_PUBLIC
-  COLLEGE_PRIVE
-  ECOLE_MATERNELLE
-  ECOLE_ELEMENTAIRE
-  UNIVERSITE_PUBLIQUE
-  UNIVERSITE_PRIVEE
-  ECOLE_SUPERIEURE
-  ECOLE_DE_COMMERCE
-  ECOLE_D_INGENIEURS
-  ECOLE_DES_ARTS
 }
 
 enum ProgramType {
-  CERTIFICATE
-  DIPLOMA
-  ASSOCIATE_DEGREE
   HND
   BTECH
   LICENCE
@@ -57,25 +32,10 @@ enum ProgramType {
   DOCTORAT
   POSTDOCTORAL
   POSTDOC
-  PROFESSIONAL_CERTIFICATION
-  CERTIFICATION_PROFESSIONNELLE
-  VOCATIONAL_TRAINING
-  FORMATION_PROFESSIONNELLE
-  ONLINE_COURSE
-  COURS_EN_LIGNE
-  EXECUTIVE_EDUCATION
-  EDUCATION_EXECUTIVE
-  CONTINUING_EDUCATION
-  FORMATION_CONTINUE
   BTS
   DUT
   DEUG
   DEUST
-  CAP
-  BEP
-  GRANDE_ECOLE
-  CLASSE_PREPA
-  CPGE
 }
 
 enum ProgramField {
@@ -133,171 +93,6 @@ enum ProgramField {
   NEUROSCIENCE
   MARINE_BIOLOGY
   FORENSIC_SCIENCE
-}
-
-enum Currency {
-  AED
-  AFN
-  ALL
-  AMD
-  ANG
-  AOA
-  ARS
-  AUD
-  AWG
-  AZN
-  BAM
-  BBD
-  BDT
-  BGN
-  BHD
-  BIF
-  BMD
-  BND
-  BOB
-  BRL
-  BSD
-  BTN
-  BWP
-  BYN
-  BZD
-  CAD
-  CDF
-  CHF
-  CLP
-  CNY
-  COP
-  CRC
-  CUP
-  CVE
-  CZK
-  DJF
-  DKK
-  DOP
-  DZD
-  EGP
-  ERN
-  ETB
-  EUR
-  FJD
-  FKP
-  FOK
-  GBP
-  GEL
-  GGP
-  GHS
-  GIP
-  GMD
-  GNF
-  GTQ
-  GYD
-  HKD
-  HNL
-  HRK
-  HTG
-  HUF
-  IDR
-  ILS
-  IMP
-  INR
-  IQD
-  IRR
-  ISK
-  JEP
-  JMD
-  JOD
-  JPY
-  KES
-  KGS
-  KHR
-  KID
-  KMF
-  KRW
-  KWD
-  KYD
-  KZT
-  LAK
-  LBP
-  LKR
-  LRD
-  LSL
-  LYD
-  MAD
-  MDL
-  MGA
-  MKD
-  MMK
-  MNT
-  MOP
-  MRU
-  MUR
-  MVR
-  MWK
-  MXN
-  MYR
-  MZN
-  NAD
-  NGN
-  NIO
-  NOK
-  NPR
-  NZD
-  OMR
-  PAB
-  PEN
-  PGK
-  PHP
-  PKR
-  PLN
-  PYG
-  QAR
-  RON
-  RSD
-  RUB
-  RWF
-  SAR
-  SBD
-  SCR
-  SDG
-  SEK
-  SGD
-  SHP
-  SLE
-  SLL
-  SOS
-  SRD
-  SSP
-  STN
-  SYP
-  SZL
-  THB
-  TJS
-  TMT
-  TND
-  TOP
-  TRY
-  TTD
-  TVD
-  TWD
-  TZS
-  UAH
-  UGX
-  USD
-  UYU
-  UZS
-  VES
-  VND
-  VUV
-  WST
-  XAF
-  XCD
-  XDR
-  XOF
-  XPF
-  YER
-  ZAR
-  ZMW
-  ZWL
 }
 
 model User {
@@ -388,7 +183,6 @@ model Program {
 model SchoolProgram {
   id        String   @id @default(uuid())
   price     Float
-  currency  Currency
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
