@@ -3,10 +3,9 @@ import { prisma } from "../prisma";
 import { OrchestrationResult } from "../utils/orchestration-result";
 import { CODES } from "../enums/codes";
 import { getNameAndPageAndItemsPerPageFromRequestQuery } from "../utils/get-name-and-page-and-items-per-page-from-request";
-import { SchoolType } from "@prisma/client";
 
 const createSchoolProgram = async (req: Request, res: Response) => {
-  let { price, schoolId, programId, currency } = req.body;
+  let { price, schoolId, programId } = req.body;
 
   const existingSchool = await prisma.school.findFirst({
     where: {
@@ -24,23 +23,23 @@ const createSchoolProgram = async (req: Request, res: Response) => {
     return;
   }
 
-  if (
-    existingSchool.type === SchoolType.PUBLIC_PRIMARY_SCHOOL ||
-    existingSchool.type === SchoolType.PRIVATE_PRIMARY_SCHOOL ||
-    existingSchool.type === SchoolType.PUBLIC_SECONDARY_SCHOOL ||
-    existingSchool.type === SchoolType.PRIVATE_SECONDARY_SCHOOL ||
-    existingSchool.type === SchoolType.COLLEGE_PRIVE ||
-    existingSchool.type === SchoolType.COLLEGE_PUBLIC ||
-    existingSchool.type === SchoolType.ECOLE_ELEMENTAIRE ||
-    existingSchool.type === SchoolType.ECOLE_MATERNELLE
-  ) {
-    OrchestrationResult.badRequest(
-      res,
-      CODES.CANNOT_ADD_PROGRAM_TO_THIS_SCHOOL_TYPE,
-      "Cannot add a program to this school type"
-    );
-    return;
-  }
+  // if (
+  //   existingSchool.type === SchoolType.PUBLIC_PRIMARY_SCHOOL ||
+  //   existingSchool.type === SchoolType.PRIVATE_PRIMARY_SCHOOL ||
+  //   existingSchool.type === SchoolType.PUBLIC_SECONDARY_SCHOOL ||
+  //   existingSchool.type === SchoolType.PRIVATE_SECONDARY_SCHOOL ||
+  //   existingSchool.type === SchoolType.COLLEGE_PRIVE ||
+  //   existingSchool.type === SchoolType.COLLEGE_PUBLIC ||
+  //   existingSchool.type === SchoolType.ECOLE_ELEMENTAIRE ||
+  //   existingSchool.type === SchoolType.ECOLE_MATERNELLE
+  // ) {
+  //   OrchestrationResult.badRequest(
+  //     res,
+  //     CODES.CANNOT_ADD_PROGRAM_TO_THIS_SCHOOL_TYPE,
+  //     "Cannot add a program to this school type"
+  //   );
+  //   return;
+  // }
 
   const existingProgram = await prisma.program.findFirst({
     where: {
@@ -77,7 +76,6 @@ const createSchoolProgram = async (req: Request, res: Response) => {
   const schoolProgram = await prisma.schoolProgram.create({
     data: {
       price,
-      currency,
       programId,
       schoolId,
       creatorId: req.currentUser?.id as string,
@@ -85,7 +83,6 @@ const createSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      currency: true,
       school: {
         select: {
           id: true,
@@ -149,12 +146,11 @@ const updateSchoolProgram = async (req: Request, res: Response) => {
     },
     data: {
       price,
-      currency,
     },
     select: {
       id: true,
       price: true,
-      currency: true,
+
       school: {
         select: {
           id: true,
@@ -221,7 +217,7 @@ const deleteSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      currency: true,
+
       school: {
         select: {
           id: true,
@@ -288,7 +284,7 @@ const restoreSchoolProgram = async (req: Request, res: Response) => {
     select: {
       id: true,
       price: true,
-      currency: true,
+
       school: {
         select: {
           id: true,
